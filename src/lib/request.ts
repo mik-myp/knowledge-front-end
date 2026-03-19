@@ -7,6 +7,8 @@ import axios, {
 } from "axios"
 import { toast } from "sonner"
 
+import useUser from "@/stores/useUser"
+
 export interface ApiResponse<T> {
   code: number
   message: string
@@ -55,9 +57,7 @@ interface RequestInstance extends AxiosInstance {
   ): Promise<T>
 }
 
-const SUCCESS_CODE = 200
-
-const STATUS_MESSAGE_MAP: Record<number, string> = {
+const statusMessageMap: Record<number, string> = {
   400: "请求参数错误",
   401: "未授权，请重新登录",
   403: "拒绝访问",
@@ -70,116 +70,97 @@ const STATUS_MESSAGE_MAP: Record<number, string> = {
   504: "网关超时",
 }
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === "object" && value !== null
-}
-
-const isApiResponse = (value: unknown): value is ApiResponse<unknown> => {
-  if (!isRecord(value)) {
-    return false
-  }
-
+const isApiResponse = <T = unknown>(
+  value: unknown
+): value is ApiResponse<T> => {
   return (
-    typeof value.code === "number" &&
-    typeof value.message === "string" &&
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as ApiResponse<T>).code === "number" &&
+    typeof (value as ApiResponse<T>).message === "string" &&
     "data" in value &&
-    typeof value.timestamp === "string" &&
-    typeof value.path === "string"
+    typeof (value as ApiResponse<T>).timestamp === "string" &&
+    typeof (value as ApiResponse<T>).path === "string"
   )
 }
 
-const createRequestError = (message: string): Error => {
-  return new Error(message)
-}
+const createResponseError = (code?: number, message?: string): Error => {
+  if (code === 401) {
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+    useUser.getState().setUser(null)
 
-const getStatusMessage = (code?: number, message?: string): string => {
-  if (typeof message === "string" && message.trim()) {
-    return message
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/login"
+    ) {
+      window.location.replace("/login")
+    }
   }
 
-  if (typeof code === "number" && STATUS_MESSAGE_MAP[code]) {
-    return STATUS_MESSAGE_MAP[code]
-  }
+  const errorMessage =
+    (typeof code === "number" ? statusMessageMap[code] : undefined) ||
+    message?.trim() ||
+    "请求失败"
 
-  return "请求失败"
+  toast.error(errorMessage)
+
+  return new Error(errorMessage)
 }
-
-const showErrorToast = (message: string): void => {
-  toast.error(message)
-}
-
-const normalizeResponseError = (code?: number, message?: string): Error => {
-  const errorMessage = getStatusMessage(code, message)
-
-  showErrorToast(errorMessage)
-
-  return createRequestError(errorMessage)
-}
-
-const extractResponseData = (
-  response: AxiosResponse<ApiResponse<unknown>>
-): unknown => {
-  const responseData = response.data
-
-  if (!isApiResponse(responseData)) {
-    const errorMessage = "接口返回格式不正确"
-
-    showErrorToast(errorMessage)
-
-    throw createRequestError(errorMessage)
-  }
-
-  if (responseData.code !== SUCCESS_CODE) {
-    throw normalizeResponseError(responseData.code, responseData.message)
-  }
-
-  return responseData.data
-}
-
-const handleResponseError = (
-  error: AxiosError<ApiResponse<unknown>>
-): Promise<never> => {
-  const responseData = error.response?.data
-  const errorCode =
-    (isApiResponse(responseData) ? responseData.code : undefined) ??
-    error.response?.status
-  const errorMessage = isApiResponse(responseData)
-    ? responseData.message
-    : undefined
-
-  return Promise.reject(normalizeResponseError(errorCode, errorMessage))
-}
-
-const baseURL = import.meta.env.DEV ? "/api" : "http://120.26.21.10/"
 
 const request = axios.create({
-  baseURL,
+  baseURL: import.meta.env.DEV ? "/api" : "http://120.26.21.10/",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 }) as RequestInstance
 
+const handleResponseData = <T>(response: AxiosResponse<ApiResponse<T>>): T => {
+  if (!isApiResponse<T>(response.data)) {
+    const errorMessage = "接口返回格式不正确"
+    toast.error(errorMessage)
+    throw new Error(errorMessage)
+  }
+
+  if (response.data.code !== 200) {
+    throw createResponseError(response.data.code, response.data.message)
+  }
+
+  return response.data.data
+}
+
 request.interceptors.request.use(
   (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
     config.headers.set("Accept", "application/json")
 
+    const accessToken = localStorage.getItem("accessToken")
+
+    if (accessToken) {
+      config.headers.set("Authorization", `Bearer ${accessToken}`)
+    }
+
     return config
   },
   (error: AxiosError): Promise<never> => {
-    const errorMessage = "请求发送失败"
-
-    showErrorToast(errorMessage)
-
+    toast.error("请求发送失败")
     return Promise.reject(error)
   }
 )
 
 request.interceptors.response.use(
-  extractResponseData as Parameters<
-    typeof request.interceptors.response.use
-  >[0],
-  handleResponseError
+  handleResponseData as Parameters<typeof request.interceptors.response.use>[0],
+  (error: AxiosError<ApiResponse<unknown>>): Promise<never> => {
+    const responseData = error.response?.data
+    const code =
+      (isApiResponse(responseData) ? responseData.code : undefined) ??
+      error.response?.status
+    const message = isApiResponse(responseData)
+      ? responseData.message
+      : undefined
+
+    return Promise.reject(createResponseError(code, message))
+  }
 )
 
 export default request

@@ -1,10 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Command } from "lucide-react"
-
-import { NavProjects } from "@/layouts/components/nav-projects"
-import { NavMain } from "@/layouts/components/nav-main"
+import { Library } from "lucide-react"
+import { Link } from "react-router"
 
 import {
   Sidebar,
@@ -16,8 +14,10 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { NavMain } from "@/layouts/components/nav-main"
+import { NavKnowledges } from "@/layouts/components/nav-knowledges"
+
 import { NavUser } from "./nav-user"
-import { Link } from "react-router"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -28,11 +28,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <Link to="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
+                  <Library className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">知识库</span>
+                  <span className="truncate text-xs">团队知识空间</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -41,7 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects />
+        <NavKnowledges />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

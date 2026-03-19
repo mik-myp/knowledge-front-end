@@ -1,11 +1,11 @@
 import { Book, Home, type LucideIcon } from "lucide-react"
+import { Link, useLocation } from "react-router"
 
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Link, useLocation } from "react-router"
 
 const items: {
   title: string
@@ -14,13 +14,13 @@ const items: {
   isActive?: boolean
 }[] = [
   {
-    title: "Home",
+    title: "首页",
     url: "/",
     icon: Home,
     isActive: true,
   },
   {
-    title: "Knowledge",
+    title: "知识库",
     url: "/knowledge",
     icon: Book,
   },
