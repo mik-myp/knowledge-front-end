@@ -15,6 +15,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Spinner } from "./spinner"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "./empty"
+import { Database } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -78,7 +80,14 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-32 text-center">
-                暂无数据
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Database />
+                    </EmptyMedia>
+                    <EmptyTitle>暂无数据</EmptyTitle>
+                  </EmptyHeader>
+                </Empty>
               </TableCell>
             </TableRow>
           )}

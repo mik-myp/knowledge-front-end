@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "@tanstack/react-form"
 import { useRequest } from "ahooks"
 import { Link } from "react-router"
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { FolderOpen, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -47,6 +47,13 @@ import {
   updateKnowledgeById,
 } from "@/services/knowledge"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 
 const formSchema = z.object({
   name: z
@@ -74,7 +81,6 @@ export function NavKnowledges() {
     createKnowledge,
     {
       manual: true,
-      onSuccess: () => loadKnowledges(1),
     }
   )
 
@@ -82,13 +88,11 @@ export function NavKnowledges() {
     updateKnowledgeById,
     {
       manual: true,
-      onSuccess: () => loadKnowledges(1),
     }
   )
 
   const { runAsync: deleteAsync } = useRequest(deleteKnowledgeById, {
     manual: true,
-    onSuccess: () => loadKnowledges(1),
   })
 
   const form = useForm({
@@ -114,6 +118,7 @@ export function NavKnowledges() {
         await createAsync(payload)
       }
 
+      await refreshKnowledges(page)
       form.reset()
       setKnowledgeId(undefined)
       setDialogOpen(false)
@@ -143,6 +148,41 @@ export function NavKnowledges() {
     }
   }
 
+  async function refreshKnowledges(currentPage: number) {
+    const firstPageResult = await getKnowledgesAsync({
+      page: 1,
+      pageSize: knowledgePageSize,
+    })
+
+    const latestPage = Math.max(
+      1,
+      Math.ceil(firstPageResult.total / knowledgePageSize)
+    )
+    const targetPage = Math.min(currentPage, latestPage)
+
+    if (targetPage === 1) {
+      setDataList(firstPageResult.dataList)
+      setTotal(firstPageResult.total)
+      setPage(1)
+      return
+    }
+
+    const restResults = await Promise.all(
+      Array.from({ length: targetPage - 1 }, (_, index) =>
+        getKnowledgesAsync({
+          page: index + 2,
+          pageSize: knowledgePageSize,
+        })
+      )
+    )
+
+    setDataList(
+      [firstPageResult, ...restResults].flatMap((result) => result.dataList)
+    )
+    setTotal(firstPageResult.total)
+    setPage(targetPage)
+  }
+
   useEffect(() => {
     void getKnowledgesAsync({
       page: 1,
@@ -169,6 +209,7 @@ export function NavKnowledges() {
 
   const handleDelete = async (item: TKnowledgeBaseRecord) => {
     await deleteAsync({ id: item.id })
+    await refreshKnowledges(page)
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -181,6 +222,7 @@ export function NavKnowledges() {
   }
 
   const hasMore = dataList.length < total
+
   const showSkeleton = loading && dataList.length === 0
 
   return (
@@ -199,41 +241,55 @@ export function NavKnowledges() {
             </div>
           ) : (
             <SidebarMenu className="gap-2">
-              {dataList.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton asChild>
-                    <Link to={`/knowledge/${item.id}`} title={item.name}>
-                      <span>{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <SidebarMenuAction showOnHover>
-                        <MoreHorizontal />
-                        <span className="sr-only">更多操作</span>
-                      </SidebarMenuAction>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      className="w-56 rounded-lg"
-                      side="right"
-                      align="start"
-                    >
-                      <DropdownMenuItem onClick={() => handleUpdate(item)}>
-                        <Pencil className="text-muted-foreground" />
-                        <span>编辑</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => handleDelete(item)}
+              {dataList.length > 0 ? (
+                dataList.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton asChild>
+                      <Link to={`/knowledge/${item.id}`} title={item.name}>
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                          <MoreHorizontal />
+                          <span className="sr-only">更多操作</span>
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        className="w-56 rounded-lg"
+                        side="right"
+                        align="start"
                       >
-                        <Trash2 className="text-muted-foreground" />
-                        <span>删除</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </SidebarMenuItem>
-              ))}
+                        <DropdownMenuItem onClick={() => handleUpdate(item)}>
+                          <Pencil className="text-muted-foreground" />
+                          <span>编辑</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleDelete(item)}
+                        >
+                          <Trash2 className="text-muted-foreground" />
+                          <span>删除</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </SidebarMenuItem>
+                ))
+              ) : (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <FolderOpen />
+                    </EmptyMedia>
+                    <EmptyTitle>暂无知识库</EmptyTitle>
+                    <EmptyDescription>
+                      您还没有创建任何知识库。开始创建第一个知识库吧。
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              )}
               {hasMore && (
                 <SidebarMenuItem>
                   <SidebarMenuButton

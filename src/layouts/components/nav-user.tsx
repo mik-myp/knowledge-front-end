@@ -21,6 +21,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { clearAuthSession } from "@/lib/auth"
 import { userLogout, userMe } from "@/services/user"
 import useUser from "@/stores/useUser"
 
@@ -36,9 +37,7 @@ export function NavUser() {
   const { loading: userLogoutLoading, run } = useRequest(userLogout, {
     manual: true,
     onSuccess: () => {
-      setUser(null)
-      localStorage.removeItem("accessToken")
-      localStorage.removeItem("refreshToken")
+      clearAuthSession()
       navigate("/login")
     },
   })

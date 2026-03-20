@@ -18,12 +18,22 @@ export const passwordSchema = z
   .min(8, "密码至少 8 个字符")
   .max(32, "密码长度不能超过 32 个字符")
 
+export const saveAuthSession = (data: TokenPairResult) => {
+  useUser.getState().setUser(data.user)
+  localStorage.setItem("accessToken", data.accessToken)
+  localStorage.setItem("refreshToken", data.refreshToken)
+}
+
+export const clearAuthSession = () => {
+  useUser.getState().setUser(null)
+  localStorage.removeItem("accessToken")
+  localStorage.removeItem("refreshToken")
+}
+
 export const persistAuthSession = (
   data: TokenPairResult,
   navigate: NavigateFunction
 ) => {
-  useUser.getState().setUser(data.user)
-  localStorage.setItem("accessToken", data.accessToken)
-  localStorage.setItem("refreshToken", data.refreshToken)
+  saveAuthSession(data)
   navigate("/")
 }
