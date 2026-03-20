@@ -1,5 +1,5 @@
 import axios, {
-  AxiosError,
+  type AxiosError,
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
@@ -27,12 +27,25 @@ const statusMessageMap: Record<number, string> = {
   504: "网关超时",
 }
 
-// 是否正在刷新 Token
+type PendingRequest = {
+  config: InternalAxiosRequestConfig
+  resolve: (
+    value:
+      | AxiosResponse<ApiResponse<unknown>>
+      | PromiseLike<AxiosResponse<ApiResponse<unknown>>>
+  ) => void
+  reject: (reason?: unknown) => void
+}
+
 let isRefreshing = false
-// 存储等待重试的请求队列
-let requests = []
+let pendingRequests: PendingRequest[] = []
 
 const getAccessToken = () => localStorage.getItem("accessToken")
+
+const clearTokens = () => {
+  localStorage.removeItem("accessToken")
+  localStorage.removeItem("refreshToken")
+}
 
 const redirectToLogin = () => {
   if (typeof window === "undefined" || window.location.pathname === "/login") {
@@ -49,26 +62,50 @@ const createResponseError = (code?: number, message?: string) => {
     "请求失败"
 
   toast.error(errorMessage)
-  return Promise.reject(new Error(errorMessage))
+  return new Error(errorMessage)
 }
 
 const service = axios.create({
   baseURL: import.meta.env.DEV ? "/api" : "http://120.26.21.10/",
   timeout: 10000,
-  headers: {
-    "Content-Type": "application/json",
-  },
 })
 
 async function refreshToken() {
-  const refreshToken = localStorage.getItem("refreshToken")
-  const response = await axios.post("/users/refresh", { refreshToken })
-  return response.data.accessToken // 返回新的 accessToken
+  const savedRefreshToken = localStorage.getItem("refreshToken")
+
+  if (!savedRefreshToken) {
+    throw new Error("未授权，请重新登录")
+  }
+
+  const response = await axios.post<ApiResponse<{ accessToken: string }>>(
+    "/users/refresh",
+    { refreshToken: savedRefreshToken },
+    {
+      baseURL: service.defaults.baseURL,
+      timeout: service.defaults.timeout,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }
+  )
+
+  if (response.data.code !== 200 || !response.data.data?.accessToken) {
+    throw new Error(response.data.message?.trim() || "刷新登录状态失败")
+  }
+
+  return response.data.data.accessToken
 }
 
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     config.headers.set("Accept", "application/json")
+
+    if (config.data instanceof FormData) {
+      config.headers.set("Content-Type", "multipart/form-data")
+    } else {
+      config.headers.set("Content-Type", "application/json")
+    }
 
     const accessToken = getAccessToken()
 
@@ -85,80 +122,95 @@ service.interceptors.request.use(
 )
 
 service.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse>) => {
-    if (response.data.code === 200) {
-      return response.data.data
+  (response: AxiosResponse<ApiResponse<unknown>>) => {
+    if (response.data.code !== 200) {
+      return Promise.reject(
+        createResponseError(response.data.code, response.data.message)
+      )
     }
-    return createResponseError(response.data.code, response.data.message)
+
+    return response
   },
   async (error: AxiosError<ApiResponse<unknown>>) => {
     const { config, response } = error
-
-    const code = response?.data.code || response?.status
-
-    const message = response?.data.message
+    const code = response?.data.code ?? response?.status
+    const message = response?.data.message ?? error.message
 
     if (!response) {
-      return createResponseError(code, message)
+      return Promise.reject(createResponseError(code, message))
     }
 
-    if (response.status === 401) {
-      // 防止刷新接口自身也返回 401（死循环）
-      if (config?.url?.includes("/users/refresh")) {
-        redirectToLogin()
-        return createResponseError(code, message)
-      }
+    if (response.status !== 401) {
+      return Promise.reject(createResponseError(code, message))
+    }
 
-      // 将当前失败的请求存入队列
-      const retryOriginalRequest = new Promise((resolve) => {
-        requests.push({
-          config, // 原始请求配置
-          resolve, // 用于后续重试时 resolve
-        })
+    if (config?.url?.includes("/users/refresh")) {
+      clearTokens()
+      redirectToLogin()
+      return Promise.reject(createResponseError(code, message))
+    }
+
+    if (!config) {
+      redirectToLogin()
+      return Promise.reject(createResponseError(code, message))
+    }
+
+    const retryOriginalRequest = new Promise<
+      AxiosResponse<ApiResponse<unknown>>
+    >((resolve, reject) => {
+      pendingRequests.push({
+        config,
+        resolve,
+        reject,
       })
-      // 如果已经在刷新 Token，直接返回等待 Promise
-      if (isRefreshing) {
-        return retryOriginalRequest
-      }
-      // 开始刷新 Token
-      isRefreshing = true
-      try {
-        // 调用刷新 Token 的方法
-        const newToken = await refreshToken()
-        // 更新本地存储的 Token
-        localStorage.setItem("accessToken", newToken)
+    })
 
-        // 刷新成功后，重试队列中的所有请求
-        requests.forEach(({ config, resolve }) => {
-          // 更新请求头中的 Token
-          config.headers.Authorization = `Bearer ${newToken}`
-          // 重新发起请求，并 resolve 结果
-          resolve(service(config))
-        })
-
-        // 清空队列
-        requests = []
-
-        // 重试当前请求（也可以直接用 retryOriginalRequest 返回，但队列中已包含当前请求）
-        // 这里直接重新请求当前接口
-        config.headers.Authorization = `Bearer ${newToken}`
-        return service(config)
-      } catch {
-        // 刷新失败，清除 Token，跳转登录
-        localStorage.removeItem("accessToken")
-        redirectToLogin()
-        return Promise.reject(createResponseError(code, message))
-      } finally {
-        isRefreshing = false
-      }
+    if (isRefreshing) {
+      return retryOriginalRequest
     }
-    return createResponseError(code, message)
+
+    isRefreshing = true
+
+    try {
+      const newToken = await refreshToken()
+      localStorage.setItem("accessToken", newToken)
+
+      const currentPendingRequests = pendingRequests
+      pendingRequests = []
+
+      currentPendingRequests.forEach(({ config, resolve }) => {
+        config.headers.set("Authorization", `Bearer ${newToken}`)
+        resolve(service(config))
+      })
+
+      return retryOriginalRequest
+    } catch (refreshError) {
+      clearTokens()
+
+      const handledError = createResponseError(
+        code ?? 401,
+        refreshError instanceof Error ? refreshError.message : message
+      )
+
+      const currentPendingRequests = pendingRequests
+      pendingRequests = []
+
+      currentPendingRequests.forEach(({ reject }) => {
+        reject(handledError)
+      })
+
+      redirectToLogin()
+      return retryOriginalRequest
+    } finally {
+      isRefreshing = false
+    }
   }
 )
 
-export default function request<T = unknown>(
+export default async function request<T = unknown>(
   url: string,
   options?: AxiosRequestConfig
 ): Promise<T> {
-  return service({ url, ...options }) as Promise<T>
+  const response = await service.request<ApiResponse<T>>({ url, ...options })
+  return response.data.data
 }

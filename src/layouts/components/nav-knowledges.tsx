@@ -149,37 +149,18 @@ export function NavKnowledges() {
   }
 
   async function refreshKnowledges(currentPage: number) {
-    const firstPageResult = await getKnowledgesAsync({
+    const loadedCount = currentPage * knowledgePageSize
+    const result = await getKnowledgesAsync({
       page: 1,
-      pageSize: knowledgePageSize,
+      pageSize: loadedCount,
     })
 
-    const latestPage = Math.max(
-      1,
-      Math.ceil(firstPageResult.total / knowledgePageSize)
-    )
+    const latestPage = Math.max(1, Math.ceil(result.total / knowledgePageSize))
     const targetPage = Math.min(currentPage, latestPage)
+    const visibleCount = targetPage * knowledgePageSize
 
-    if (targetPage === 1) {
-      setDataList(firstPageResult.dataList)
-      setTotal(firstPageResult.total)
-      setPage(1)
-      return
-    }
-
-    const restResults = await Promise.all(
-      Array.from({ length: targetPage - 1 }, (_, index) =>
-        getKnowledgesAsync({
-          page: index + 2,
-          pageSize: knowledgePageSize,
-        })
-      )
-    )
-
-    setDataList(
-      [firstPageResult, ...restResults].flatMap((result) => result.dataList)
-    )
-    setTotal(firstPageResult.total)
+    setDataList(result.dataList.slice(0, visibleCount))
+    setTotal(result.total)
     setPage(targetPage)
   }
 

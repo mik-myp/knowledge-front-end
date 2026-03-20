@@ -20,6 +20,10 @@ export async function getKnowledges(data: { page: number; pageSize: number }) {
   })
 }
 
+export async function getAllKnowledges() {
+  return await request<TKnowledgeBaseRecord[]>("/knowledge-bases")
+}
+
 export async function getKnowledgeById(data: { id: string }) {
   return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${data.id}`)
 }

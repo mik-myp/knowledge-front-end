@@ -1,9 +1,7 @@
 import { DataTable } from "@/components/ui/data-table"
-import { getKnowledges } from "@/services/knowledge"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { useRequest } from "ahooks"
 import UploadBtn from "./components/UploadBtn"
 
 const columns: ColumnDef<TKnowledgeBaseRecord>[] = [
@@ -26,14 +24,6 @@ const columns: ColumnDef<TKnowledgeBaseRecord>[] = [
 ]
 
 const Knowledge = () => {
-  // const { data, loading } = useRequest(getKnowledges, {
-  //   defaultParams: [
-  //     {
-  //       page: 1,
-  //       pageSize: 10,
-  //     },
-  //   ],
-  // })
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
