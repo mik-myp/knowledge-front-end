@@ -1,9 +1,10 @@
 import BaseLayout from "@/layouts"
 import Home from "@/pages/Home"
-import Knowledge from "@/pages/Knowledge"
+import Documents from "@/pages/Documents"
 import Login from "@/pages/Login"
 import Register from "@/pages/Register"
 import { createBrowserRouter } from "react-router"
+import Knowledges from "@/pages/Knowledges"
 
 const router = createBrowserRouter([
   {
@@ -23,8 +24,12 @@ const router = createBrowserRouter([
         Component: Home,
       },
       {
-        path: "knowledge",
-        Component: Knowledge,
+        path: "documents",
+        Component: Documents,
+      },
+      {
+        path: "knowledges/:id",
+        Component: Knowledges,
       },
     ],
   },

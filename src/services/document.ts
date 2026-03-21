@@ -2,7 +2,7 @@ import request from "@/lib/request"
 import type { TDocumentRecord } from "@/types/documents"
 
 export async function documnetsUpload(data: FormData) {
-  return await request("/documnets/upload", {
+  return await request<TDocumentRecord>("/documnets/upload", {
     method: "POST",
     data,
   })
@@ -17,6 +17,12 @@ export async function findAllDocuments(data: {
     total: number
   }>("/documnets/all", {
     method: "GET",
-    data,
+    params: data,
+  })
+}
+
+export async function deleteDocumentById(data: { id: string }) {
+  return await request<TDocumentRecord>(`/documnets/${data.id}`, {
+    method: "DELETE",
   })
 }

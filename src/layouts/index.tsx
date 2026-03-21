@@ -1,25 +1,47 @@
-import { AppSidebar } from "@/layouts/components/app-sidebar"
-
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import { Outlet } from "react-router"
+import { Button, Layout, theme } from "antd"
+import { useState } from "react"
+import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons"
+
+import UserInfo from "./components/UserInfo"
+import NavSider from "./components/NavSider"
+
+const { Header, Content } = Layout
 
 const BaseLayout = () => {
+  const [collapsed, setCollapsed] = useState(false)
+
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken()
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-        </header>
-        <div className="flex flex-1 p-4">
+    <Layout className="h-full">
+      <NavSider collapsed={collapsed} />
+      <Layout>
+        <Header
+          style={{ background: colorBgContainer }}
+          className="flex items-center justify-between px-4"
+        >
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className="h-8 w-8 text-base"
+          />
+          <UserInfo />
+        </Header>
+        <Content
+          style={{
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
+          }}
+          className="m-4 min-h-70 p-6"
+        >
           <Outlet />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </Content>
+      </Layout>
+    </Layout>
   )
 }
 

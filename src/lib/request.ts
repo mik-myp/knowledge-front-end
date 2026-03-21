@@ -4,7 +4,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios"
-import { toast } from "sonner"
+import { notification } from "antd"
 
 export interface ApiResponse<T = unknown> {
   code: number
@@ -60,8 +60,11 @@ const createResponseError = (code?: number, message?: string) => {
     (typeof code === "number" ? statusMessageMap[code] : undefined) ||
     message?.trim() ||
     "请求失败"
+  notification.error({
+    title: "请求失败",
+    description: errorMessage,
+  })
 
-  toast.error(errorMessage)
   return new Error(errorMessage)
 }
 
@@ -116,7 +119,10 @@ service.interceptors.request.use(
     return config
   },
   (error: AxiosError) => {
-    toast.error("请求发送失败")
+    notification.error({
+      title: "请求发送失败",
+      description: error.message,
+    })
     return Promise.reject(error)
   }
 )
