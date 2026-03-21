@@ -26,6 +26,7 @@ import { getAllKnowledges } from "@/services/knowledge"
 import { cn } from "@/lib/utils"
 import { useRequest } from "ahooks"
 import { documnetsUpload } from "@/services/document"
+import { Spinner } from "@/components/ui/spinner"
 
 const formSchema = z.object({
   knowledgeId: z.string().min(1, "请选择知识库"),
@@ -38,9 +39,12 @@ const UploadBtn = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const { runAsync: documnetsUploadAsync } = useRequest(documnetsUpload, {
-    manual: true,
-  })
+  const { runAsync: documnetsUploadAsync, loading } = useRequest(
+    documnetsUpload,
+    {
+      manual: true,
+    }
+  )
 
   const form = useForm({
     defaultValues: {
@@ -51,20 +55,22 @@ const UploadBtn = () => {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log("选择的知识库：", value.knowledgeId)
-      console.log("上传的文件：", value.file)
       const formData = new FormData()
 
       formData.append("file", value.file!)
       formData.append("knowledgeBaseId", value.knowledgeId)
 
-      await documnetsUploadAsync(formData)
+      try {
+        await documnetsUploadAsync(formData)
 
-      form.reset()
-      if (inputRef.current) {
-        inputRef.current.value = ""
+        form.reset()
+        if (inputRef.current) {
+          inputRef.current.value = ""
+        }
+        setDialogOpen(false)
+      } catch {
+        /* empty */
       }
-      setDialogOpen(false)
     },
   })
 
@@ -203,7 +209,8 @@ const UploadBtn = () => {
             <DialogClose asChild>
               <Button variant="outline">取消</Button>
             </DialogClose>
-            <Button type="submit" form="upload-file-form">
+            <Button type="submit" form="upload-file-form" disabled={loading}>
+              {loading ? <Spinner /> : null}
               确定
             </Button>
           </DialogFooter>
