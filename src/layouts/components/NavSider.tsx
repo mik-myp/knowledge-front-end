@@ -57,6 +57,7 @@ const actionButtonSize = 32
 
 const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   const { pathname } = useLocation()
+
   const navigate = useNavigate()
 
   const {
@@ -65,9 +66,9 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   const [form] = Form.useForm()
 
   const [mainSelectedKeys, setMainSelectedKeys] = useState<string[]>([pathname])
-  const [knowledgeSelectedKeys, setKnowledgeSelectedKeys] = useState<string[]>(
-    []
-  )
+  const [knowledgeSelectedKeys, setKnowledgeSelectedKeys] = useState<string[]>([
+    pathname,
+  ])
   const [knowledgeId, setKnowledgeId] = useState<string | undefined>(undefined)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -95,11 +96,13 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   const handleMainClick: NonNullable<MenuProps["onClick"]> = ({ key }) => {
     navigate(key)
     setMainSelectedKeys([key])
+    setKnowledgeSelectedKeys([])
   }
 
   const handleKnowledgeClick: NonNullable<MenuProps["onClick"]> = ({ key }) => {
     navigate(key)
     setKnowledgeSelectedKeys([key])
+    setMainSelectedKeys([])
   }
 
   const collapsedInlineStart = Math.ceil(
