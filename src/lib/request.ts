@@ -4,7 +4,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios"
-import { notification } from "antd"
+import { notification } from "@/lib/antdNotification"
 
 export interface ApiResponse<T = unknown> {
   code: number

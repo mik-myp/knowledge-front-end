@@ -21,6 +21,15 @@ export async function findAllDocuments(data: {
   })
 }
 
+export async function findAllDocumentsByKnowledgeId(data: {
+  knowledgeBaseId: string
+}) {
+  return await request<TDocumentRecord[]>("/documnets/allByKnowledgeId", {
+    method: "GET",
+    params: data,
+  })
+}
+
 export async function deleteDocumentById(data: { id: string }) {
   return await request<TDocumentRecord>(`/documnets/${data.id}`, {
     method: "DELETE",

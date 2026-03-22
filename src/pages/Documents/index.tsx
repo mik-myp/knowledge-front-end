@@ -1,11 +1,24 @@
 import UploadBtn from "./components/UploadBtn"
-import { useAntdTable, useRequest } from "ahooks"
+import {
+  useAntdTable,
+  useEventListener,
+  useRequest,
+  useUpdateEffect,
+} from "ahooks"
 import { deleteDocumentById, findAllDocuments } from "@/services/document"
 import type { TDocumentRecord } from "@/types/documents"
 import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
+import useDocumentsVersion from "@/stores/useDocumentsVersion"
+import { useState } from "react"
+
+const diffHeight = 342
+const getTableScrollY = (): number => window.innerHeight - diffHeight
 
 const Documents = () => {
+  const { version, invalidate } = useDocumentsVersion()
+  const [scrollY, setScrollY] = useState<number>(getTableScrollY)
+
   const { tableProps, refreshAsync, data, loading } = useAntdTable(
     async ({ current, pageSize }) => {
       const res = await findAllDocuments({ page: current, pageSize })
@@ -24,7 +37,23 @@ const Documents = () => {
     deleteDocumentById,
     {
       manual: true,
-      onSuccess: async () => await refreshAsync(),
+      onSuccess: async () => {
+        invalidate()
+      },
+    }
+  )
+
+  useUpdateEffect(() => {
+    void refreshAsync()
+  }, [version])
+
+  useEventListener(
+    "resize",
+    () => {
+      setScrollY(getTableScrollY())
+    },
+    {
+      target: () => window,
     }
   )
 
@@ -61,10 +90,7 @@ const Documents = () => {
         return (
           <Flex>
             <Popconfirm
-              arrow
               title="确定要删除吗？"
-              okText="确定"
-              cancelText="取消"
               onConfirm={() => deleteAsync({ id: record.id })}
             >
               <Button icon={<DeleteOutlined />} danger type="primary" />
@@ -85,15 +111,16 @@ const Documents = () => {
           </div>
         </div>
 
-        <UploadBtn refreshAsync={refreshAsync} />
+        <UploadBtn />
       </div>
-      <div className="mx-auto py-4">
+      <div className="mx-auto h-[calc(100vh-180px)] py-4">
         <Table<TDocumentRecord>
           {...tableProps}
+          rowKey="id"
           loading={loading || deleteLoading}
           columns={columns}
           scroll={{
-            y: 550,
+            y: scrollY,
           }}
         />
       </div>

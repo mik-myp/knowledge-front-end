@@ -1,24 +1,35 @@
 import { cn } from "@/lib/utils"
+import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import {
   createKnowledge,
+  deleteKnowledgeById,
   getAllKnowledges,
   updateKnowledgeById,
 } from "@/services/knowledge"
-import { BookOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons"
+import type { TKnowledgeBaseRecord } from "@/types/knowledge"
+import {
+  BookOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  EllipsisOutlined,
+  HomeOutlined,
+  PlusOutlined,
+} from "@ant-design/icons"
 import { useRequest } from "ahooks"
 import {
+  App,
   Button,
+  Dropdown,
   Form,
   Input,
   Layout,
   Menu,
   Modal,
   Skeleton,
-  Spin,
   theme,
   type MenuProps,
 } from "antd"
-import { useMemo, useState, type CSSProperties } from "react"
+import { useCallback, useMemo, useState, type CSSProperties } from "react"
 import { useLocation, useNavigate } from "react-router"
 
 const { Sider } = Layout
@@ -64,6 +75,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
     token: { colorSplit, lineType, lineWidth },
   } = theme.useToken()
   const [form] = Form.useForm()
+  const { modal } = App.useApp()
 
   const [mainSelectedKeys, setMainSelectedKeys] = useState<string[]>([pathname])
   const [knowledgeSelectedKeys, setKnowledgeSelectedKeys] = useState<string[]>([
@@ -71,6 +83,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   ])
   const [knowledgeId, setKnowledgeId] = useState<string | undefined>(undefined)
   const [modalOpen, setModalOpen] = useState(false)
+  const { invalidate } = useDocumentsVersion()
 
   const {
     data,
@@ -83,15 +96,105 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
 
   const {
     runAsync: updateKnowledgeByIdAsync,
-    loading: cupdateKnowledgeByIdLoading,
-  } = useRequest(updateKnowledgeById, { manual: true })
+    loading: updateKnowledgeByIdLoading,
+  } = useRequest(updateKnowledgeById, { manual: true, onSuccess: invalidate })
+
+  const { runAsync: deleteKnowledgeByIdAsync } = useRequest(
+    deleteKnowledgeById,
+    { manual: true }
+  )
+
+  const handleDelete = useCallback(
+    async (knowledgeId: string) => {
+      await deleteKnowledgeByIdAsync({
+        id: knowledgeId,
+      })
+      if (pathname.includes(knowledgeId)) {
+        navigate("/")
+      }
+      await getAllKnowledgesAsync()
+      invalidate()
+    },
+    [
+      deleteKnowledgeByIdAsync,
+      getAllKnowledgesAsync,
+      invalidate,
+      pathname,
+      navigate,
+    ]
+  )
+
+  const handleEllipsisClick = useCallback(
+    (
+      {
+        key,
+        domEvent,
+      }: Pick<
+        Parameters<NonNullable<MenuProps["onClick"]>>[0],
+        "key" | "domEvent"
+      >,
+      item: TKnowledgeBaseRecord
+    ) => {
+      domEvent.stopPropagation()
+      if (key === "edit") {
+        setModalOpen(true)
+        setKnowledgeId(item.id)
+        form.setFieldsValue({
+          name: item.name,
+          description: item.description,
+        })
+      } else if (key === "delete") {
+        modal.confirm({
+          title: "删除知识库",
+          content: "确定要删除该知识库吗？",
+          okText: "删除",
+          onOk: async () => await handleDelete(item.id),
+        })
+      }
+    },
+    [form, modal, handleDelete]
+  )
 
   const knowledgeItems = useMemo<MenuItem[]>(() => {
     return (data ?? []).map((item) => ({
       key: `/knowledges/${item.id}`,
-      label: item.name,
+      label: collapsed ? (
+        item.name
+      ) : (
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1 overflow-hidden text-ellipsis">
+            {item.name}
+          </div>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "edit",
+                  label: "编辑",
+                  icon: <EditOutlined />,
+                },
+                {
+                  key: "delete",
+                  label: "删除",
+                  icon: <DeleteOutlined />,
+                  danger: true,
+                },
+              ],
+              onClick: ({ key, domEvent }) =>
+                handleEllipsisClick({ key, domEvent }, item),
+            }}
+            trigger={["click"]}
+          >
+            <EllipsisOutlined
+              className="text-base text-black"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Dropdown>
+        </div>
+      ),
+      title: item.name,
     }))
-  }, [data])
+  }, [data, handleEllipsisClick, collapsed])
 
   const handleMainClick: NonNullable<MenuProps["onClick"]> = ({ key }) => {
     navigate(key)
@@ -218,7 +321,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
           )}
         >
           <Menu
-            className="min-h-0 flex-1 overflow-y-auto [scrollbar-width:thin]"
+            className="scrollbar-thin min-h-0 flex-1 overflow-y-auto"
             theme="light"
             mode="inline"
             items={knowledgeItems}
@@ -233,7 +336,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
         onCancel={() => handleModalOpenChange(false)}
         afterClose={handleAfterClose}
         onOk={handleOk}
-        confirmLoading={createKnowledgeLoading || cupdateKnowledgeByIdLoading}
+        confirmLoading={createKnowledgeLoading || updateKnowledgeByIdLoading}
       >
         <Form
           form={form}

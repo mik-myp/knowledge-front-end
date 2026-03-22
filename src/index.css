@@ -2,6 +2,8 @@
 
 @import "tailwindcss";
 
+@plugin 'tailwind-scrollbar';
+
 @import "tw-animate-css";
 
 html,

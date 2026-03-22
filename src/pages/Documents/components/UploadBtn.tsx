@@ -2,25 +2,24 @@ import { useState } from "react"
 import { getAllKnowledges } from "@/services/knowledge"
 import { useRequest } from "ahooks"
 import { documnetsUpload } from "@/services/document"
-import type { TDocumentRecord } from "@/types/documents"
 import { Button, Form, Modal, Select, Spin, Upload } from "antd"
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons"
+import type { UploadChangeParam } from "antd/es/upload"
+import useDocumentsVersion from "@/stores/useDocumentsVersion"
 
 const { Dragger } = Upload
 
-const UploadBtn = ({
-  refreshAsync,
-}: {
-  refreshAsync: () => Promise<{
-    list: TDocumentRecord[]
-    total: number
-  }>
-}) => {
+const UploadBtn = () => {
   const [modalOpen, setModalOpen] = useState(false)
+
+  const { invalidate } = useDocumentsVersion()
 
   const [form] = Form.useForm<{
     knowledgeId: string
-    file: { file: File; fileList: File & { originFileObj: File }[] }
+    files: File &
+      {
+        originFileObj: File
+      }[]
   }>()
 
   const { runAsync: documnetsUploadAsync, loading: documnetsUploadLoading } =
@@ -53,20 +52,27 @@ const UploadBtn = ({
   const handleOk = async () => {
     const validate = await form.validateFields()
     if (validate) {
-      console.log(validate)
       const formData = new FormData()
-
-      formData.append("file", validate.file.file)
+      validate.files.forEach((item) => {
+        formData.append("files", item.originFileObj)
+      })
       formData.append("knowledgeBaseId", validate.knowledgeId)
 
       try {
         await documnetsUploadAsync(formData)
         setModalOpen(false)
-        await refreshAsync()
+        invalidate()
       } catch {
         /* empty */
       }
     }
+  }
+
+  const normFile = (e?: UploadChangeParam) => {
+    if (Array.isArray(e)) {
+      return e
+    }
+    return e?.fileList
   }
 
   return (
@@ -126,7 +132,7 @@ const UploadBtn = ({
             ></Select>
           </Form.Item>
           <Form.Item
-            name="file"
+            name="files"
             label="文件"
             rules={[
               {
@@ -134,8 +140,10 @@ const UploadBtn = ({
                 message: "请上传文件",
               },
             ]}
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
           >
-            <Dragger name="file" beforeUpload={() => false} multiple>
+            <Dragger name="files" beforeUpload={() => false} multiple>
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>

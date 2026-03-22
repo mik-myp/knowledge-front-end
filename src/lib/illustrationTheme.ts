@@ -117,6 +117,9 @@ const useIllustrationTheme = () => {
           container: styles.modalContainer,
         },
       },
+      avatar: {
+        className: styles.illustrationBorder,
+      },
       alert: {
         className: styles.illustrationBorder,
       },

@@ -5,7 +5,7 @@ export type TDocumentRecord = {
   originalName?: string
   extension: number
   fileType: number
-  mimeType?: Date
+  mimeType?: string
   size: number
   status: string
 }
