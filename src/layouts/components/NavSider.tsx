@@ -14,6 +14,7 @@ import {
   EllipsisOutlined,
   HomeOutlined,
   PlusOutlined,
+  RobotOutlined,
 } from "@ant-design/icons"
 import { useRequest, useUpdateEffect } from "ahooks"
 import {
@@ -56,6 +57,11 @@ const items: MenuItem[] = [
     key: "/documents",
     label: "文档",
     icon: <BookOutlined />,
+  },
+  {
+    key: "/ai",
+    label: "AI对话",
+    icon: <RobotOutlined />,
   },
   {
     type: "divider",

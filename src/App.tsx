@@ -1,12 +1,13 @@
 import { RouterProvider } from "react-router"
 import router from "./routers/index.ts"
-import { ConfigProvider, App as AntdApp } from "antd"
+import { App as AntdApp } from "antd"
 import { StyleProvider } from "@ant-design/cssinjs"
 import useIllustrationTheme from "@/lib/illustrationTheme.ts"
 import { AntdAppBridge } from "@/lib/antdApp"
 import zhCN from "antd/locale/zh_CN"
 import dayjs from "dayjs"
 import "dayjs/locale/zh-cn"
+import { XProvider } from "@ant-design/x"
 
 dayjs.locale("en")
 
@@ -15,12 +16,12 @@ function App() {
 
   return (
     <StyleProvider layer>
-      <ConfigProvider {...configProps} locale={zhCN}>
+      <XProvider {...configProps} locale={zhCN}>
         <AntdApp className="h-full">
           <AntdAppBridge />
           <RouterProvider router={router} />
         </AntdApp>
-      </ConfigProvider>
+      </XProvider>
     </StyleProvider>
   )
 }

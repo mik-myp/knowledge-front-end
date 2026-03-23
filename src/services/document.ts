@@ -33,3 +33,10 @@ export async function deleteDocumentById(data: { id: string }) {
     method: "DELETE",
   })
 }
+
+export async function deleteAllDocumentById(data: { documentIds: string[] }) {
+  return await request<TDocumentRecord>(`/documents/all`, {
+    method: "DELETE",
+    data,
+  })
+}

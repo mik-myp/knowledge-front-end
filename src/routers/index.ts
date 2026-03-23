@@ -6,6 +6,8 @@ import Register from "@/pages/Register"
 import { createBrowserRouter } from "react-router"
 import Knowledges from "@/pages/Knowledges"
 import DocumentDetail from "@/pages/Documents/Detail"
+import AILayout from "@/layouts/AILayout"
+import AIChat from "@/pages/AIChat"
 
 const router = createBrowserRouter([
   {
@@ -35,6 +37,16 @@ const router = createBrowserRouter([
       {
         path: "documents/:id",
         Component: DocumentDetail,
+      },
+    ],
+  },
+  {
+    path: "/ai",
+    Component: AILayout,
+    children: [
+      {
+        index: true,
+        Component: AIChat,
       },
     ],
   },

@@ -5,7 +5,11 @@ import {
   useRequest,
   useUpdateEffect,
 } from "ahooks"
-import { deleteDocumentById, findAllDocuments } from "@/services/document"
+import {
+  deleteAllDocumentById,
+  deleteDocumentById,
+  findAllDocuments,
+} from "@/services/document"
 import type { TDocumentRecord } from "@/types/documents"
 import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
@@ -22,6 +26,7 @@ const Documents = () => {
   const { version, invalidate } = useDocumentsVersion()
 
   const [scrollY, setScrollY] = useState<number>(getTableScrollY)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
   const { tableProps, refreshAsync, data, loading } = useAntdTable(
     async ({ current, pageSize }) => {
@@ -46,6 +51,16 @@ const Documents = () => {
       },
     }
   )
+
+  const {
+    runAsync: deleteAllDocumentByIdAsync,
+    loading: deleteAllDocumentByIdLoading,
+  } = useRequest(deleteAllDocumentById, {
+    manual: true,
+    onSuccess: async () => {
+      invalidate()
+    },
+  })
 
   useUpdateEffect(() => {
     void refreshAsync()
@@ -136,13 +151,26 @@ const Documents = () => {
           </div>
         </div>
 
-        <UploadBtn />
+        <div className="flex flex-row gap-4">
+          <UploadBtn />
+          <Button
+            disabled={selectedRowKeys.length === 0}
+            onClick={async () => {
+              await deleteAllDocumentByIdAsync({
+                documentIds: selectedRowKeys as string[],
+              })
+            }}
+            loading={deleteAllDocumentByIdLoading}
+          >
+            批量删除
+          </Button>
+        </div>
       </div>
       <div className="mx-auto h-[calc(100vh-180px)] py-4">
         <Table<TDocumentRecord>
           {...tableProps}
           rowKey="id"
-          loading={loading || deleteLoading}
+          loading={loading || deleteLoading || deleteAllDocumentByIdLoading}
           columns={columns}
           scroll={{
             y: scrollY,
@@ -153,6 +181,12 @@ const Documents = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条数据`,
+          }}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (selectedRowKeys) => {
+              setSelectedRowKeys(selectedRowKeys)
+            },
           }}
         />
       </div>

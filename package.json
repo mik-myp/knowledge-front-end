@@ -14,7 +14,9 @@
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",
     "@ant-design/icons": "6.x",
+    "@ant-design/x": "^2.4.0",
     "@ant-design/x-markdown": "^2.4.0",
+    "@ant-design/x-sdk": "^2.4.0",
     "@tailwindcss/vite": "^4.2.1",
     "ahooks": "^3.9.6",
     "antd": "^6.3.3",

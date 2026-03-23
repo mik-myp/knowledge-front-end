@@ -1,9 +1,9 @@
 import { useMemo } from "react"
 import { theme } from "antd"
-import type { ConfigProviderProps } from "antd"
 import { createStyles } from "antd-style"
+import type { XProviderProps } from "@ant-design/x"
 
-const useStyles = createStyles(({ css, cssVar }) => {
+export const useStyles = createStyles(({ css, cssVar }) => {
   const illustrationBorder = {
     border: `${cssVar.lineWidth} solid ${cssVar.colorBorder}`,
   }
@@ -13,9 +13,20 @@ const useStyles = createStyles(({ css, cssVar }) => {
     boxShadow: `4px 4px 0 ${cssVar.colorBorder}`,
   }
 
+  const illustrationNoneBorder = {
+    border: "none",
+  }
+
+  const illustrationNoneBox = {
+    ...illustrationNoneBorder,
+    boxShadow: "none",
+  }
+
   return {
     illustrationBorder,
     illustrationBox,
+    illustrationNoneBorder,
+    illustrationNoneBox,
     buttonRoot: css({
       ...illustrationBox,
       fontWeight: 600,
@@ -49,7 +60,7 @@ const useStyles = createStyles(({ css, cssVar }) => {
 const useIllustrationTheme = () => {
   const { styles } = useStyles()
 
-  return useMemo<ConfigProviderProps>(
+  return useMemo<XProviderProps>(
     // eslint-disable-next-line react-hooks/preserve-manual-memoization
     () => ({
       theme: {
@@ -117,6 +128,7 @@ const useIllustrationTheme = () => {
           container: styles.modalContainer,
         },
       },
+
       avatar: {
         className: styles.illustrationBorder,
       },
@@ -180,6 +192,18 @@ const useIllustrationTheme = () => {
           track: {
             height: 10,
           },
+        },
+      },
+      conversations: {
+        classNames: {
+          creation: styles.illustrationBox,
+          
+        },
+      },
+      sender: {
+        classNames: {
+          root: styles.illustrationBox,
+          input: styles.illustrationNoneBox, // 暂时无效果，只能在组件的classnames上设置
         },
       },
     }),
