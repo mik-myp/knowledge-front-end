@@ -11,12 +11,16 @@ import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import { useState } from "react"
+import dayjs from "dayjs"
+import { useNavigate } from "react-router"
 
 const diffHeight = 342
 const getTableScrollY = (): number => window.innerHeight - diffHeight
 
 const Documents = () => {
+  const navigate = useNavigate()
   const { version, invalidate } = useDocumentsVersion()
+
   const [scrollY, setScrollY] = useState<number>(getTableScrollY)
 
   const { tableProps, refreshAsync, data, loading } = useAntdTable(
@@ -59,28 +63,48 @@ const Documents = () => {
 
   const columns: TableProps<TDocumentRecord>["columns"] = [
     {
-      title: "原始文件名",
+      title: "文件名",
       dataIndex: "originalName",
+      render: (_, record) => {
+        return (
+          <div
+            onClick={() => navigate(`/documents/${record.id}`)}
+            className="cursor-pointer"
+          >
+            {record.originalName}
+          </div>
+        )
+      },
     },
     {
+      title: "所属知识库",
+      dataIndex: "knowledgeBaseName",
+    },
+    {
+      title: "文件扩展名",
       dataIndex: "extension",
-      title: "原始扩展名",
-    },
-    {
-      dataIndex: "fileType",
-      title: "展示级文件类型",
     },
     {
       dataIndex: "mimeType",
-      title: "MIME 类型",
+      title: "文件类型",
     },
     {
       dataIndex: "size",
-      title: "文件大小",
+      title: "文件大小（KB）",
     },
     {
-      dataIndex: "status",
-      title: "文档处理状态",
+      dataIndex: "createdAt",
+      title: "创建时间",
+      render: (_, record) => {
+        return dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss")
+      },
+    },
+    {
+      dataIndex: "updatedAt",
+      title: "更新时间",
+      render: (_, record) => {
+        return dayjs(record.updatedAt).format("YYYY-MM-DD HH:mm:ss")
+      },
     },
     {
       title: "操作",
@@ -92,6 +116,7 @@ const Documents = () => {
             <Popconfirm
               title="确定要删除吗？"
               onConfirm={() => deleteAsync({ id: record.id })}
+              arrow={false}
             >
               <Button icon={<DeleteOutlined />} danger type="primary" />
             </Popconfirm>
@@ -121,6 +146,13 @@ const Documents = () => {
           columns={columns}
           scroll={{
             y: scrollY,
+          }}
+          pagination={{
+            ...tableProps.pagination,
+            pageSizeOptions: ["10", "20", "50"],
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `共 ${total} 条数据`,
           }}
         />
       </div>

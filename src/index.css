@@ -6,6 +6,9 @@
 
 @import "tw-animate-css";
 
+@import '@ant-design/x-markdown/themes/light.css';
+
+
 html,
 body,
 #root {

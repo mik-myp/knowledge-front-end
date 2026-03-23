@@ -5,6 +5,7 @@ import Login from "@/pages/Login"
 import Register from "@/pages/Register"
 import { createBrowserRouter } from "react-router"
 import Knowledges from "@/pages/Knowledges"
+import DocumentDetail from "@/pages/Documents/Detail"
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "knowledges/:id",
         Component: Knowledges,
+      },
+      {
+        path: "documents/:id",
+        Component: DocumentDetail,
       },
     ],
   },

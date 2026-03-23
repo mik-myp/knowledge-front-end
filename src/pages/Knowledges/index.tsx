@@ -1,7 +1,4 @@
-import {
-  deleteDocumentById,
-  findAllDocumentsByKnowledgeId,
-} from "@/services/document"
+import { deleteDocumentById, findAllDocuments } from "@/services/document"
 import { getKnowledgeById } from "@/services/knowledge"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import { DeleteOutlined } from "@ant-design/icons"
@@ -19,12 +16,13 @@ import {
   type MasonryProps,
 } from "antd"
 import { useEffect } from "react"
-import { useParams } from "react-router"
+import { useNavigate, useParams } from "react-router"
 
 const { Text } = Typography
 
 const Knowledges = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
 
   const { version } = useDocumentsVersion()
 
@@ -39,9 +37,9 @@ const Knowledges = () => {
   const {
     data: documentsData,
     loading: documentsLoading,
-    runAsync: findAllDocumentsByKnowledgeIdAsync,
+    runAsync: findAllDocumentsAsync,
     refreshAsync,
-  } = useRequest(findAllDocumentsByKnowledgeId, {
+  } = useRequest(findAllDocuments, {
     manual: true,
   })
 
@@ -61,42 +59,50 @@ const Knowledges = () => {
     },
   ]
 
-  const masonryItems: MasonryProps["items"] = documentsData?.map((item) => ({
-    key: item.id,
-    data: item,
-    children: (
-      <Card
-        title={item.originalName}
-        loading={documentsLoading}
-        extra={
-          <Popconfirm
-            title="确定要删除吗？"
-            onConfirm={async () => await deleteAsync({ id: item.id })}
-          >
-            <Button
-              icon={<DeleteOutlined />}
-              danger
-              type="primary"
-              className="ml-2"
-            />
-          </Popconfirm>
-        }
-      >
-        <div className="flex flex-col">
-          <Text ellipsis>原始扩展名：{item.originalName}</Text>
-          <Text ellipsis>展示级文件类型：{item.extension}</Text>
-          <Text ellipsis>MIME 类型：{item.mimeType}</Text>
-          <Text ellipsis>文件大小：{item.size}</Text>
-        </div>
-      </Card>
-    ),
-  }))
+  const masonryItems: MasonryProps["items"] = documentsData?.dataList?.map(
+    (item) => ({
+      key: item.id,
+      data: item,
+      children: (
+        <Card
+          title={item.originalName}
+          loading={documentsLoading}
+          extra={
+            <Popconfirm
+              title="确定要删除吗？"
+              onConfirm={async (e) => {
+                e?.stopPropagation()
+                await deleteAsync({ id: item.id })
+              }}
+              arrow={false}
+            >
+              <Button
+                icon={<DeleteOutlined />}
+                danger
+                type="primary"
+                className="ml-2"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </Popconfirm>
+          }
+          onClick={() => navigate(`/documents/${item.id}`)}
+        >
+          <div className="flex flex-col">
+            <Text ellipsis>原始扩展名：{item.originalName}</Text>
+            <Text ellipsis>展示级文件类型：{item.extension}</Text>
+            <Text ellipsis>MIME 类型：{item.mimeType}</Text>
+            <Text ellipsis>文件大小：{item.size}</Text>
+          </div>
+        </Card>
+      ),
+    })
+  )
 
   useEffect(() => {
     if (!id) return
     getKnowledgeByIdAsync({ id })
-    findAllDocumentsByKnowledgeIdAsync({ knowledgeBaseId: id })
-  }, [id, version, getKnowledgeByIdAsync, findAllDocumentsByKnowledgeIdAsync])
+    findAllDocumentsAsync({ knowledgeBaseId: id, page: 1, pageSize: 10 })
+  }, [id, version, getKnowledgeByIdAsync, findAllDocumentsAsync])
 
   return (
     <Spin spinning={loading || documentsLoading || deleteLoading}>

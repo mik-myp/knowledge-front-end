@@ -2,10 +2,13 @@ export type TDocumentRecord = {
   id: string
   userId: string
   knowledgeBaseId: string
+  knowledgeBaseName: string
   originalName?: string
-  extension: number
-  fileType: number
+  extension: string
   mimeType?: string
   size: number
-  status: string
+  sourceType: "upload" | "editor"
+  content?: string
+  createdAt: string
+  updatedAt: string
 }

@@ -92,6 +92,8 @@ const UploadBtn = () => {
         confirmLoading={documnetsUploadLoading}
         destroyOnHidden
         afterClose={handleAfterClose}
+        width={700}
+        centered
       >
         <div className="text-sm text-black/80">选择知识库并上传文件</div>
         <Form

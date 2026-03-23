@@ -3,7 +3,6 @@ export type TKnowledgeBaseRecord = {
   userId: string
   name: string
   description?: string
-  documentCount: number
-  chunkCount: number
-  lastIndexedAt?: Date
+  createdAt: string
+  updatedAt: string
 }

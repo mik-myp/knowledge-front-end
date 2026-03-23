@@ -15,7 +15,7 @@ import {
   HomeOutlined,
   PlusOutlined,
 } from "@ant-design/icons"
-import { useRequest } from "ahooks"
+import { useRequest, useUpdateEffect } from "ahooks"
 import {
   App,
   Button,
@@ -250,6 +250,11 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
       }
     }
   }
+
+  useUpdateEffect(() => {
+    setMainSelectedKeys([pathname])
+    setKnowledgeSelectedKeys([pathname])
+  }, [pathname])
 
   return (
     <Sider
