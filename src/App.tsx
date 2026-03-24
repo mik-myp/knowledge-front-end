@@ -9,7 +9,7 @@ import dayjs from "dayjs"
 import "dayjs/locale/zh-cn"
 import { XProvider } from "@ant-design/x"
 
-dayjs.locale("en")
+dayjs.locale("zh-cn")
 
 function App() {
   const configProps = useIllustrationTheme()

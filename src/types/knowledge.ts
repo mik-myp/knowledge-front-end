@@ -3,6 +3,4 @@ export type TKnowledgeBaseRecord = {
   userId: string
   name: string
   description?: string
-  createdAt: string
-  updatedAt: string
 }

@@ -40,7 +40,9 @@ type PendingRequest = {
 let isRefreshing = false
 let pendingRequests: PendingRequest[] = []
 
-const getAccessToken = () => localStorage.getItem("accessToken")
+export const getAccessToken = () => localStorage.getItem("accessToken")
+export const getRequestBaseURL = () =>
+  import.meta.env.DEV ? "http://localhost:3000" : "http://120.26.21.10"
 
 const clearTokens = () => {
   localStorage.removeItem("accessToken")
@@ -69,7 +71,7 @@ const createResponseError = (code?: number, message?: string) => {
 }
 
 const service = axios.create({
-  baseURL: import.meta.env.DEV ? "/api" : "http://120.26.21.10/",
+  baseURL: import.meta.env.DEV ? "/api" : `${getRequestBaseURL()}/`,
   timeout: 10000,
 })
 

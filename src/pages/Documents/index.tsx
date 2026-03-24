@@ -10,7 +10,7 @@ import {
   deleteDocumentById,
   findAllDocuments,
 } from "@/services/document"
-import type { TDocumentRecord } from "@/types/documents"
+import type { TDocumentListRecord } from "@/types/documents"
 import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
@@ -76,7 +76,7 @@ const Documents = () => {
     }
   )
 
-  const columns: TableProps<TDocumentRecord>["columns"] = [
+  const columns: TableProps<TDocumentListRecord>["columns"] = [
     {
       title: "文件名",
       dataIndex: "originalName",
@@ -167,7 +167,7 @@ const Documents = () => {
         </div>
       </div>
       <div className="mx-auto h-[calc(100vh-180px)] py-4">
-        <Table<TDocumentRecord>
+        <Table<TDocumentListRecord>
           {...tableProps}
           rowKey="id"
           loading={loading || deleteLoading || deleteAllDocumentByIdLoading}

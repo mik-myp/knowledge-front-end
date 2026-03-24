@@ -1,14 +1,29 @@
+export type TDocumentSourceType = "upload" | "editor"
+
 export type TDocumentRecord = {
   id: string
   userId: string
   knowledgeBaseId: string
-  knowledgeBaseName: string
-  originalName?: string
+  originalName: string
   extension: string
-  mimeType?: string
+  mimeType: string
   size: number
-  sourceType: "upload" | "editor"
+  sourceType: TDocumentSourceType
   content?: string
   createdAt: string
   updatedAt: string
+}
+
+export type TDocumentListRecord = TDocumentRecord & {
+  knowledgeBaseName: string
+}
+
+export type TDocumentListResult = {
+  dataList: TDocumentListRecord[]
+  total: number
+}
+
+export type TRemoveDocumentsResult = {
+  deletedCount: number
+  deletedIds: string[]
 }

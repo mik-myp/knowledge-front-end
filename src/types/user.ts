@@ -2,8 +2,7 @@ export type TUserProfile = {
   id: string
   email: string
   username: string
-  avatar?: string
-  lastLoginAt?: Date
+  lastLoginAt?: string
 }
 
 export type TokenPairResult = {

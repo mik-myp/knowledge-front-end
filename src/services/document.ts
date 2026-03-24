@@ -1,8 +1,12 @@
 import request from "@/lib/request"
-import type { TDocumentRecord } from "@/types/documents"
+import type {
+  TDocumentListResult,
+  TDocumentRecord,
+  TRemoveDocumentsResult,
+} from "@/types/documents"
 
 export async function documnetsUpload(data: FormData) {
-  return await request<TDocumentRecord>("/documents/upload", {
+  return await request<TDocumentRecord[]>("/documents/upload", {
     method: "POST",
     data,
   })
@@ -13,10 +17,7 @@ export async function findAllDocuments(data: {
   pageSize: number
   knowledgeBaseId?: string
 }) {
-  return await request<{
-    dataList: TDocumentRecord[]
-    total: number
-  }>("/documents", {
+  return await request<TDocumentListResult>("/documents", {
     method: "GET",
     params: data,
   })
@@ -35,7 +36,7 @@ export async function deleteDocumentById(data: { id: string }) {
 }
 
 export async function deleteAllDocumentById(data: { documentIds: string[] }) {
-  return await request<TDocumentRecord>(`/documents/all`, {
+  return await request<TRemoveDocumentsResult>(`/documents/all`, {
     method: "DELETE",
     data,
   })
