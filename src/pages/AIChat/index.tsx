@@ -1,11 +1,10 @@
 import {
-  createSession,
   findAllSession,
   getHistoryMessages,
   removeSession,
   updateSession,
 } from "@/services/chat"
-import { getAccessToken, getRequestBaseURL } from "@/lib/request"
+import { authorizedFetch, getRequestBaseURL } from "@/lib/request"
 import type {
   TChatAskRequest,
   TChatAskResponse,
@@ -30,6 +29,121 @@ import ChatSender from "./components/ChatSender"
 import ChatSide from "./components/ChatSide"
 
 const chatAskUrl = `${getRequestBaseURL()}/chat/ask`
+const NEW_CONVERSATION_KEY = "new-conversation"
+const LOCAL_CONVERSATION_KEY_PREFIX = "local-conversation-"
+
+const isDraftConversationKey = (key?: string) =>
+  Boolean(key?.startsWith(LOCAL_CONVERSATION_KEY_PREFIX))
+
+const isEphemeralConversationKey = (key?: string) =>
+  key === NEW_CONVERSATION_KEY || isDraftConversationKey(key)
+
+const isPersistedConversationKey = (key?: string) =>
+  Boolean(key && /^[a-f\d]{24}$/i.test(key))
+
+const buildConversationTitle = (value: string) => {
+  const nextTitle = value.trim().replace(/\s+/g, " ").slice(0, 50)
+
+  return nextTitle || "普通会话"
+}
+
+const buildConversationReuseMessage = (
+  knowledge?: TKnowledgeBaseRecord
+): string => {
+  if (knowledge?.name) {
+    return `已存在知识库「${knowledge.name}」的待开始会话，已切换过去`
+  }
+
+  return "已存在待开始的普通会话，已切换过去"
+}
+
+const buildChatRequestErrorMessage = (error: Error): string => {
+  if (error.name === "AbortError") {
+    return "已停止生成回答"
+  }
+
+  const errorMessage = error.message.trim()
+
+  if (errorMessage.includes("超时")) {
+    return errorMessage
+  }
+
+  if (errorMessage.includes("status 504")) {
+    return "知识库检索超时，请稍后重试"
+  }
+
+  if (errorMessage.includes("status 502")) {
+    return "知识库服务暂时不可用，请稍后重试"
+  }
+
+  return errorMessage || "本次问答处理失败，请稍后重试"
+}
+
+const createChatAskStreamTransform = () => {
+  let buffer = ""
+
+  return new TransformStream<string, TChatAskResponse>({
+    transform(chunk, controller) {
+      buffer += chunk
+
+      const events = buffer.split("\n\n")
+      buffer = events.pop() ?? ""
+
+      for (const event of events) {
+        const lines = event
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean)
+
+        const dataLine = lines.find((line) => line.startsWith("data:"))
+
+        if (!dataLine) {
+          continue
+        }
+
+        const payload = dataLine.slice(5).trim()
+
+        if (!payload) {
+          continue
+        }
+
+        try {
+          controller.enqueue(JSON.parse(payload) as TChatAskResponse)
+        } catch {
+          continue
+        }
+      }
+    },
+    flush(controller) {
+      const remaining = buffer.trim()
+
+      if (!remaining) {
+        return
+      }
+
+      const dataLine = remaining
+        .split("\n")
+        .map((line) => line.trim())
+        .find((line) => line.startsWith("data:"))
+
+      if (!dataLine) {
+        return
+      }
+
+      const payload = dataLine.slice(5).trim()
+
+      if (!payload) {
+        return
+      }
+
+      try {
+        controller.enqueue(JSON.parse(payload) as TChatAskResponse)
+      } catch {
+        /* empty */
+      }
+    },
+  })
+}
 
 const getConversationGroup = (updatedAt: string) => {
   const updateTime = dayjs(updatedAt)
@@ -48,9 +162,7 @@ const getConversationGroup = (updatedAt: string) => {
 const toConversationItem = (session: TChatRecord): TChatConversationItem => {
   return {
     key: session.id,
-    label: session.knowledgeBaseId
-      ? `[知识库] ${session.title}`
-      : session.title,
+    label: session.title,
     group: getConversationGroup(session.updatedAt),
     title: session.title,
     knowledgeBaseId: session.knowledgeBaseId,
@@ -83,6 +195,9 @@ const AIChat = () => {
   } = theme.useToken()
 
   const { message } = App.useApp()
+  const hydratedMessagesRef = useRef<
+    Map<string, DefaultMessageInfo<TChatMessageRecord>[]>
+  >(new Map())
 
   const {
     conversations,
@@ -91,18 +206,28 @@ const AIChat = () => {
     setConversations,
   } = useXConversations({
     defaultConversations: [],
-    defaultActiveConversationKey: "",
+    defaultActiveConversationKey: NEW_CONVERSATION_KEY,
   })
+  const [draftConversations, setDraftConversations] = useState<
+    TChatConversationItem[]
+  >([])
 
   const activeConversationKeyRef = useRef(activeConversationKey)
-  const loadSessionsRef = useRef<(preferredKey?: string) => Promise<void>>(
-    async () => {}
-  )
-  const syncMessagesRef = useRef<(sessionId: string) => Promise<void>>(
-    async () => {}
-  )
+  const completeDraftConversationRef = useRef<
+    (draftKey: string | undefined, sessionId: string) => Promise<void>
+  >(async () => {})
+  const promoteDraftConversationRef = useRef<
+    (draftKey: string | undefined, sessionId: string) => void
+  >(() => {})
 
-  const conversationItems = conversations as TChatConversationItem[]
+  const persistedConversationItems = conversations as TChatConversationItem[]
+  const conversationItems = [
+    ...draftConversations,
+    ...persistedConversationItems,
+  ]
+  const activeDraftConversation = draftConversations.find(
+    (item) => item.key === activeConversationKey
+  )
 
   useEffect(() => {
     activeConversationKeyRef.current = activeConversationKey
@@ -110,28 +235,25 @@ const AIChat = () => {
 
   const { runAsync: loadSessionsAsync, loading: conversationsLoading } =
     useRequest(
-      async (preferredKey?: string) => {
+      async () => {
         const sessionList = await findAllSession()
 
         return {
-          preferredKey,
           sessionList,
         }
       },
       {
         manual: true,
-        onSuccess: ({ preferredKey, sessionList }) => {
+        onSuccess: ({ sessionList }) => {
           const nextConversations = sessionList.map(toConversationItem)
-          const currentConversationKey =
-            preferredKey ?? activeConversationKeyRef.current
-          const nextActiveConversationKey = nextConversations.some(
-            (conversation) => conversation.key === currentConversationKey
-          )
-            ? currentConversationKey
-            : (nextConversations[0]?.key ?? "")
 
           setConversations(nextConversations)
-          setActiveConversationKey(nextActiveConversationKey)
+          setDraftConversations((currentDrafts) =>
+            currentDrafts.filter(
+              (item) =>
+                !nextConversations.some((nextItem) => nextItem.key === item.key)
+            )
+          )
         },
       }
     )
@@ -141,6 +263,13 @@ const AIChat = () => {
     loading: conversationMessagesLoading,
   } = useRequest(
     async (sessionId: string) => {
+      if (!isPersistedConversationKey(sessionId)) {
+        return {
+          sessionId,
+          messages: [],
+        }
+      }
+
       const messages = await getHistoryMessages({
         sessionId,
       })
@@ -155,11 +284,6 @@ const AIChat = () => {
     }
   )
 
-  const { runAsync: createSessionAsync, loading: creatingConversation } =
-    useRequest(createSession, {
-      manual: true,
-    })
-
   const { runAsync: updateSessionAsync, loading: updatingConversation } =
     useRequest(updateSession, {
       manual: true,
@@ -171,8 +295,20 @@ const AIChat = () => {
 
   const getHistoryMessageList = useCallback(
     async (info?: { conversationKey?: string }) => {
-      if (!info?.conversationKey) {
+      if (
+        !info?.conversationKey ||
+        isEphemeralConversationKey(info.conversationKey)
+      ) {
         return []
+      }
+
+      const hydratedMessages = hydratedMessagesRef.current.get(
+        info.conversationKey
+      )
+
+      if (hydratedMessages) {
+        hydratedMessagesRef.current.delete(info.conversationKey)
+        return hydratedMessages
       }
 
       try {
@@ -192,33 +328,53 @@ const AIChat = () => {
         {
           manual: true,
           headers: {
-            Accept: "application/json",
+            Accept: "text/event-stream",
             "Content-Type": "application/json",
           },
+          transformStream: createChatAskStreamTransform,
           fetch: (baseURL, options) => {
-            const { body, method, signal, headers } = options
-
-            return fetch(baseURL, {
-              body,
-              method,
-              signal,
-              headers: {
-                ...headers,
-                Authorization: `Bearer ${getAccessToken() ?? ""}`,
-              },
+            return authorizedFetch(baseURL, {
+              body: options.body,
+              method: options.method,
+              signal: options.signal,
+              headers: options.headers,
             })
           },
           callbacks: {
+            onUpdate: (chunk) => {
+              const currentConversationKey = activeConversationKeyRef.current
+
+              if (!isEphemeralConversationKey(currentConversationKey)) {
+                return
+              }
+
+              if (!chunk.sessionId) {
+                return
+              }
+
+              promoteDraftConversationRef.current(
+                currentConversationKey,
+                chunk.sessionId
+              )
+            },
             onSuccess: async (_, __, chatMessage) => {
               const currentConversationKey = activeConversationKeyRef.current
               const sessionId =
                 chatMessage?.message.sessionId ?? currentConversationKey
 
-              await loadSessionsRef.current(currentConversationKey || sessionId)
-
-              if (sessionId && currentConversationKey === sessionId) {
-                await syncMessagesRef.current(sessionId)
+              if (!sessionId) {
+                return
               }
+
+              if (isEphemeralConversationKey(currentConversationKey)) {
+                await completeDraftConversationRef.current(
+                  currentConversationKey,
+                  sessionId
+                )
+                return
+              }
+
+              await loadSessionsAsync()
             },
             onError: () => {
               /* empty */
@@ -230,8 +386,10 @@ const AIChat = () => {
   )
 
   const {
+    messages,
     parsedMessages,
     onRequest,
+    queueRequest,
     isRequesting,
     abort: onAbort,
     setMessages,
@@ -245,113 +403,210 @@ const AIChat = () => {
     provider,
     conversationKey: activeConversationKey,
     defaultMessages: getHistoryMessageList,
+    requestFallback: (_, { error, messageInfo }) => ({
+      id: `fallback-${Date.now()}`,
+      userId: "",
+      sessionId:
+        messageInfo?.message.sessionId ?? activeConversationKeyRef.current ?? "",
+      messageType: "ai",
+      content: buildChatRequestErrorMessage(error),
+      streamStatus: "error",
+      sequence: messageInfo?.message.sequence ?? 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    requestPlaceholder: (requestParams) => ({
+      id: `placeholder-${Date.now()}`,
+      userId: "",
+      sessionId: requestParams.sessionId ?? requestParams.localSessionId ?? "",
+      messageType: "ai",
+      content: "正在思考中...",
+      streamStatus: "progress",
+      sequence: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
   })
 
-  const syncMessages = useCallback(
-    async (sessionId: string) => {
-      if (!sessionId) {
+  useEffect(() => {
+    promoteDraftConversationRef.current = (
+      draftKey: string | undefined,
+      sessionId: string
+    ) => {
+      if (!draftKey || !isDraftConversationKey(draftKey)) {
         return
       }
 
-      try {
-        const result = await loadConversationMessagesAsync(sessionId)
+      setDraftConversations((currentDrafts) =>
+        currentDrafts.map((item) => {
+          if (item.key !== draftKey) {
+            return item
+          }
 
-        if (activeConversationKeyRef.current !== result.sessionId) {
-          return
-        }
+          return {
+            ...item,
+            isDraft: false,
+            serverSessionId: sessionId,
+            group: getConversationGroup(new Date().toISOString()),
+            label: item.title,
+          }
+        })
+      )
+    }
+  }, [])
 
-        setMessages(
-          toDefaultMessages(result.messages).map((item) => ({
-            id: item.id ?? `message-${Date.now()}`,
-            status: item.status ?? "success",
-            message: item.message,
-          }))
+  useEffect(() => {
+    completeDraftConversationRef.current = async (
+      draftKey: string | undefined,
+      sessionId: string
+    ) => {
+      hydratedMessagesRef.current.set(
+        sessionId,
+        messages.map((item) => ({
+          id: item.id,
+          status: item.status,
+          message: item.message,
+        }))
+      )
+
+      activeConversationKeyRef.current = sessionId
+
+      if (draftKey && isDraftConversationKey(draftKey)) {
+        setDraftConversations((currentDrafts) =>
+          currentDrafts.filter((item) => item.key !== draftKey)
         )
-      } catch {
-        if (activeConversationKeyRef.current === sessionId) {
-          setMessages([])
-        }
       }
-    },
-    [loadConversationMessagesAsync, setMessages]
-  )
 
-  useEffect(() => {
-    loadSessionsRef.current = async (preferredKey?: string) => {
-      await loadSessionsAsync(preferredKey)
+      setActiveConversationKey(sessionId)
+      await loadSessionsAsync()
     }
-  }, [loadSessionsAsync])
-
-  useEffect(() => {
-    syncMessagesRef.current = async (sessionId: string) => {
-      await syncMessages(sessionId)
-    }
-  }, [syncMessages])
+  }, [loadSessionsAsync, messages, setActiveConversationKey])
 
   useEffect(() => {
     void loadSessionsAsync()
   }, [loadSessionsAsync])
 
-  const handleCreateConversation = useCallback(
-    async (knowledge?: TKnowledgeBaseRecord) => {
-      try {
-        const createdSession = await createSessionAsync({
-          knowledgeBaseId: knowledge?.id,
-          title: knowledge ? `${knowledge.name} 会话` : "新会话",
-        })
-
-        const nextConversation = toConversationItem(createdSession)
-
-        setConversations([
-          nextConversation,
-          ...conversationItems.filter((item) => item.key !== createdSession.id),
-        ])
-        setActiveConversationKey(createdSession.id)
-        setMessages([])
-
-        return true
-      } catch {
-        return false
+  const createDraftConversation = useCallback(
+    (params: { knowledge?: TKnowledgeBaseRecord; title?: string }) => {
+      const draftConversationKey = `${LOCAL_CONVERSATION_KEY_PREFIX}${Date.now()}`
+      const title =
+        params.title?.trim() || `${params.knowledge?.name ?? "普通"}会话`
+      const nextConversation: TChatConversationItem = {
+        key: draftConversationKey,
+        label: title,
+        group: "待开始",
+        title,
+        knowledgeBaseId: params.knowledge?.id,
+        knowledgeBaseName: params.knowledge?.name,
+        isDraft: true,
       }
+
+      setDraftConversations((currentDrafts) => [
+        nextConversation,
+        ...currentDrafts.filter((item) => item.key !== draftConversationKey),
+      ])
+      setActiveConversationKey(draftConversationKey)
+      return nextConversation
+    },
+    [setActiveConversationKey]
+  )
+
+  const handleCreateConversation = useCallback(
+    (knowledge?: TKnowledgeBaseRecord) => {
+      const existingDraftConversation = draftConversations.find((item) => {
+        if (!item.isDraft || item.serverSessionId) {
+          return false
+        }
+
+        if (knowledge?.id) {
+          return item.knowledgeBaseId === knowledge.id
+        }
+
+        return !item.knowledgeBaseId
+      })
+
+      if (existingDraftConversation) {
+        setActiveConversationKey(existingDraftConversation.key)
+        message.info(buildConversationReuseMessage(knowledge))
+        return
+      }
+
+      createDraftConversation({
+        knowledge,
+        title: knowledge ? `${knowledge.name} 会话` : "普通会话",
+      })
     },
     [
-      conversationItems,
-      createSessionAsync,
+      createDraftConversation,
+      draftConversations,
+      message,
       setActiveConversationKey,
-      setConversations,
-      setMessages,
     ]
   )
 
   const handleRenameConversation = useCallback(
     async (conversationId: string, title: string) => {
+      const nextTitle = title.trim()
+
+      if (isDraftConversationKey(conversationId)) {
+        setDraftConversations((currentDrafts) =>
+          currentDrafts.map((item) => {
+            if (item.key !== conversationId) {
+              return item
+            }
+
+            return {
+              ...item,
+              title: nextTitle,
+              label: nextTitle,
+            }
+          })
+        )
+        return
+      }
+
       await updateSessionAsync({
         id: conversationId,
-        title,
+        title: nextTitle,
       })
 
-      await loadSessionsAsync(conversationId)
+      await loadSessionsAsync()
     },
     [loadSessionsAsync, updateSessionAsync]
   )
 
   const handleRemoveConversation = useCallback(
     async (conversationId: string) => {
+      if (isDraftConversationKey(conversationId)) {
+        setDraftConversations((currentDrafts) =>
+          currentDrafts.filter((item) => item.key !== conversationId)
+        )
+
+        if (activeConversationKeyRef.current === conversationId) {
+          setActiveConversationKey(NEW_CONVERSATION_KEY)
+          setMessages([])
+        }
+
+        return
+      }
+
       await removeSessionAsync({
         id: conversationId,
       })
 
       if (activeConversationKeyRef.current === conversationId) {
         setMessages([])
+        setActiveConversationKey(NEW_CONVERSATION_KEY)
       }
 
-      await loadSessionsAsync(
-        activeConversationKeyRef.current === conversationId
-          ? undefined
-          : activeConversationKeyRef.current
-      )
+      await loadSessionsAsync()
     },
-    [loadSessionsAsync, removeSessionAsync, setMessages]
+    [
+      loadSessionsAsync,
+      removeSessionAsync,
+      setActiveConversationKey,
+      setMessages,
+    ]
   )
 
   const handleSubmit = useCallback(
@@ -361,19 +616,73 @@ const AIChat = () => {
       }
 
       if (!activeConversationKey) {
-        message.warning("请先新建会话")
+        message.warning("请先选择会话")
+        return
+      }
+
+      const trimmedValue = value.trim()
+      const currentDraftConversation = draftConversations.find(
+        (item) => item.key === activeConversationKey
+      )
+
+      if (activeConversationKey === NEW_CONVERSATION_KEY) {
+        const nextDraftConversation = createDraftConversation({
+          title: buildConversationTitle(trimmedValue),
+        })
+
+        queueRequest(nextDraftConversation.key, {
+          localSessionId: nextDraftConversation.key,
+          messages: [{ role: "human", content: trimmedValue }],
+        })
+        return
+      }
+
+      if (currentDraftConversation) {
+        if (currentDraftConversation.serverSessionId) {
+          onRequest({
+            sessionId: currentDraftConversation.serverSessionId,
+            messages: [{ role: "human", content: trimmedValue }],
+          })
+          return
+        }
+
+        onRequest({
+          knowledgeBaseId:
+            currentDraftConversation.knowledgeBaseId ?? undefined,
+          localSessionId: currentDraftConversation.key,
+          messages: [{ role: "human", content: trimmedValue }],
+        })
         return
       }
 
       onRequest({
         sessionId: activeConversationKey,
-        messages: [{ role: "human", content: value }],
+        messages: [{ role: "human", content: trimmedValue }],
       })
     },
-    [activeConversationKey, message, onRequest]
+    [
+      activeConversationKey,
+      createDraftConversation,
+      draftConversations,
+      message,
+      onRequest,
+      queueRequest,
+    ]
   )
 
+  const centeredComposerTitle = activeDraftConversation?.knowledgeBaseId
+    ? "开启知识库对话"
+    : "开启新对话"
+  const centeredComposerDescription = activeDraftConversation?.knowledgeBaseName
+    ? `当前会话将关联知识库「${activeDraftConversation.knowledgeBaseName}」，发送首条消息后才会真正创建会话。`
+    : "你可以直接提问，也可以在左侧新建知识库会话后开始问答。"
+
+  const shouldShowMessageLoading =
+    (isDefaultMessagesRequesting || conversationMessagesLoading) &&
+    parsedMessages.length === 0
+
   const showCenteredComposer =
+    isEphemeralConversationKey(activeConversationKey) &&
     parsedMessages.length === 0 &&
     !conversationMessagesLoading &&
     !isDefaultMessagesRequesting
@@ -392,7 +701,6 @@ const AIChat = () => {
         onCreateConversation={handleCreateConversation}
         onRenameConversation={handleRenameConversation}
         onRemoveConversation={handleRemoveConversation}
-        creatingConversation={creatingConversation}
         updatingConversation={updatingConversation}
         loading={conversationsLoading}
       />
@@ -407,10 +715,10 @@ const AIChat = () => {
             <div className="w-full max-w-210">
               <div className="mb-10 text-center">
                 <div className="text-4xl font-semibold tracking-tight text-black">
-                  开启新对话
+                  {centeredComposerTitle}
                 </div>
                 <div className="mt-4 text-sm leading-7 text-black/45">
-                  你可以直接提问，也可以在左侧新建知识库会话后开始问答。
+                  {centeredComposerDescription}
                 </div>
               </div>
               <ChatSender
@@ -425,9 +733,7 @@ const AIChat = () => {
             <div className="min-h-0 flex-1">
               <ChatList
                 messages={parsedMessages}
-                messageLoading={
-                  isDefaultMessagesRequesting || conversationMessagesLoading
-                }
+                messageLoading={shouldShowMessageLoading}
               />
             </div>
             <ChatSender

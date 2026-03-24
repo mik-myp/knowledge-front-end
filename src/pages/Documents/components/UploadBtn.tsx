@@ -9,7 +9,7 @@ import useDocumentsVersion from "@/stores/useDocumentsVersion"
 
 const { Dragger } = Upload
 
-const UploadBtn = () => {
+const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
   const [modalOpen, setModalOpen] = useState(false)
 
   const { invalidate } = useDocumentsVersion()
@@ -95,7 +95,9 @@ const UploadBtn = () => {
         width={700}
         centered
       >
-        <div className="text-sm text-black/80">选择知识库并上传文件</div>
+        <div className="text-sm text-black/80">
+          {knowledgeId ? "" : "请选择知识库并上传文件"}
+        </div>
         <Form
           form={form}
           className="mt-6"
@@ -105,16 +107,20 @@ const UploadBtn = () => {
           wrapperCol={{
             span: 18,
           }}
+          initialValues={{
+            knowledgeId,
+          }}
         >
           <Form.Item
             name="knowledgeId"
             label="知识库"
             rules={[
               {
-                required: true,
+                required: !knowledgeId,
                 message: "请选择知识库",
               },
             ]}
+            hidden={!!knowledgeId}
           >
             <Select
               onOpenChange={handleOpenChange}

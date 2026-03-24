@@ -15,6 +15,9 @@ export type TChatConversationItem = {
   group: string
   title: string
   knowledgeBaseId?: string | null
+  knowledgeBaseName?: string
+  isDraft?: boolean
+  serverSessionId?: string
 }
 
 export type TChatMessageSource = {
@@ -33,6 +36,7 @@ export type TChatMessageRecord = {
   sessionId: string
   messageType: TChatMessageType
   content: string
+  streamStatus?: "progress" | "answer" | "error"
   sequence: number
   name?: string
   toolCallId?: string
@@ -60,13 +64,18 @@ export type TChatAskMessage = {
 }
 
 export type TChatAskRequest = {
-  sessionId: string
+  sessionId?: string
+  knowledgeBaseId?: string
+  localSessionId?: string
   messages: TChatAskMessage[]
 }
 
 export type TChatAskResponse = {
   sessionId: string
   answer: string
-  message: TChatMessageRecord
-  sources: TChatMessageSource[]
+  progress?: string
+  error?: string
+  message?: TChatMessageRecord
+  sources?: TChatMessageSource[]
+  done?: boolean
 }

@@ -8,11 +8,12 @@ import {
 import {
   deleteAllDocumentById,
   deleteDocumentById,
+  downloadDocumentOriginalFile,
   findAllDocuments,
 } from "@/services/document"
 import type { TDocumentListRecord } from "@/types/documents"
 import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
-import { DeleteOutlined } from "@ant-design/icons"
+import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import { useState } from "react"
 import dayjs from "dayjs"
@@ -28,7 +29,7 @@ const Documents = () => {
   const [scrollY, setScrollY] = useState<number>(getTableScrollY)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
-  const { tableProps, refreshAsync, data, loading } = useAntdTable(
+  const { tableProps, refreshAsync, loading } = useAntdTable(
     async ({ current, pageSize }) => {
       const res = await findAllDocuments({ page: current, pageSize })
       return {
@@ -61,6 +62,11 @@ const Documents = () => {
       invalidate()
     },
   })
+
+  const { runAsync: downloadDocumentAsync, loading: downloadLoading } =
+    useRequest(downloadDocumentOriginalFile, {
+      manual: true,
+    })
 
   useUpdateEffect(() => {
     void refreshAsync()
@@ -124,10 +130,23 @@ const Documents = () => {
     {
       title: "操作",
       dataIndex: "action",
-      width: 100,
+      width: 150,
       render: (_, record) => {
         return (
           <Flex>
+            <Button
+              icon={<DownloadOutlined />}
+              className="mr-2"
+              onClick={(event) => {
+                event.stopPropagation()
+                void downloadDocumentAsync({
+                  id: record.id,
+                  fileName: record.originalName,
+                  extension: record.extension,
+                })
+              }}
+              loading={downloadLoading}
+            />
             <Popconfirm
               title="确定要删除吗？"
               onConfirm={() => deleteAsync({ id: record.id })}
@@ -142,15 +161,8 @@ const Documents = () => {
   ]
 
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <div className="text-lg">知识库</div>
-          <div className="text-muted-foreground text-xs">
-            {data?.total || 0} 个文档
-          </div>
-        </div>
-
+    <div className="w-full flex-col">
+      <div className="flex items-center justify-end">
         <div className="flex flex-row gap-4">
           <UploadBtn />
           <Button
@@ -166,11 +178,16 @@ const Documents = () => {
           </Button>
         </div>
       </div>
-      <div className="mx-auto h-[calc(100vh-180px)] py-4">
+      <div className="h-[calc(100vh-180px)] min-h-0 flex-1 pt-4">
         <Table<TDocumentListRecord>
           {...tableProps}
           rowKey="id"
-          loading={loading || deleteLoading || deleteAllDocumentByIdLoading}
+          loading={
+            loading ||
+            deleteLoading ||
+            deleteAllDocumentByIdLoading ||
+            downloadLoading
+          }
           columns={columns}
           scroll={{
             y: scrollY,

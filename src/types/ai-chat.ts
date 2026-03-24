@@ -7,6 +7,7 @@ import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 export type TChatListMessageItem = {
   id: string | number
   message: TChatMessageRecord
+  status?: string
 }
 
 export type TChatListProps = {
@@ -24,10 +25,9 @@ export type TChatSideProps = {
   conversations: TChatConversationItem[]
   activeConversationKey: string
   setActiveConversationKey: (key: string) => void
-  onCreateConversation: (knowledge?: TKnowledgeBaseRecord) => Promise<boolean>
+  onCreateConversation: (knowledge?: TKnowledgeBaseRecord) => void
   onRenameConversation: (conversationId: string, title: string) => Promise<void>
   onRemoveConversation: (conversationId: string) => Promise<void>
-  creatingConversation: boolean
   updatingConversation: boolean
   loading: boolean
 }
@@ -36,5 +36,4 @@ export type TKnowledgeSelectModalProps = {
   open: boolean
   onCancel: () => void
   onConfirm: (knowledge?: TKnowledgeBaseRecord) => void
-  confirmLoading: boolean
 }

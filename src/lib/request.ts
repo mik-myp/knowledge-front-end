@@ -1,10 +1,10 @@
 import axios, {
   type AxiosError,
   type AxiosRequestConfig,
-  type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios"
 import { notification } from "@/lib/antdNotification"
+import type { TokenPairResult } from "@/types/user"
 
 export interface ApiResponse<T = unknown> {
   code: number
@@ -27,26 +27,23 @@ const statusMessageMap: Record<number, string> = {
   504: "网关超时",
 }
 
-type PendingRequest = {
-  config: InternalAxiosRequestConfig
-  resolve: (
-    value:
-      | AxiosResponse<ApiResponse<unknown>>
-      | PromiseLike<AxiosResponse<ApiResponse<unknown>>>
-  ) => void
-  reject: (reason?: unknown) => void
-}
+type AuthTokenPair = Pick<TokenPairResult, "accessToken" | "refreshToken">
 
-let isRefreshing = false
-let pendingRequests: PendingRequest[] = []
+let refreshPromise: Promise<AuthTokenPair> | null = null
 
 export const getAccessToken = () => localStorage.getItem("accessToken")
+export const getRefreshToken = () => localStorage.getItem("refreshToken")
 export const getRequestBaseURL = () =>
   import.meta.env.DEV ? "http://localhost:3000" : "http://120.26.21.10"
 
 const clearTokens = () => {
   localStorage.removeItem("accessToken")
   localStorage.removeItem("refreshToken")
+}
+
+const saveTokens = ({ accessToken, refreshToken }: AuthTokenPair) => {
+  localStorage.setItem("accessToken", accessToken)
+  localStorage.setItem("refreshToken", refreshToken)
 }
 
 const redirectToLogin = () => {
@@ -70,19 +67,26 @@ const createResponseError = (code?: number, message?: string) => {
   return new Error(errorMessage)
 }
 
+const createAuthError = (message?: string) => {
+  clearTokens()
+  redirectToLogin()
+
+  return createResponseError(401, message)
+}
+
 const service = axios.create({
   baseURL: import.meta.env.DEV ? "/api" : `${getRequestBaseURL()}/`,
   timeout: 10000,
 })
 
-async function refreshToken() {
-  const savedRefreshToken = localStorage.getItem("refreshToken")
+async function refreshToken(): Promise<AuthTokenPair> {
+  const savedRefreshToken = getRefreshToken()
 
   if (!savedRefreshToken) {
     throw new Error("未授权，请重新登录")
   }
 
-  const response = await axios.post<ApiResponse<{ accessToken: string }>>(
+  const response = await axios.post<ApiResponse<TokenPairResult>>(
     "/users/refresh",
     { refreshToken: savedRefreshToken },
     {
@@ -95,11 +99,42 @@ async function refreshToken() {
     }
   )
 
-  if (response.data.code !== 200 || !response.data.data?.accessToken) {
+  const tokenPair = response.data.data
+
+  if (
+    response.data.code !== 200 ||
+    !tokenPair?.accessToken ||
+    !tokenPair.refreshToken
+  ) {
     throw new Error(response.data.message?.trim() || "刷新登录状态失败")
   }
 
-  return response.data.data.accessToken
+  const nextTokens = {
+    accessToken: tokenPair.accessToken,
+    refreshToken: tokenPair.refreshToken,
+  }
+
+  saveTokens(nextTokens)
+
+  return nextTokens
+}
+
+const refreshAuthSession = async (): Promise<AuthTokenPair> => {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        return await refreshToken()
+      } catch (error) {
+        throw createAuthError(
+          error instanceof Error ? error.message : "刷新登录状态失败"
+        )
+      } finally {
+        refreshPromise = null
+      }
+    })()
+  }
+
+  return refreshPromise
 }
 
 service.interceptors.request.use(
@@ -130,7 +165,7 @@ service.interceptors.request.use(
 )
 
 service.interceptors.response.use(
-  (response: AxiosResponse<ApiResponse<unknown>>) => {
+  (response) => {
     if (response.data.code !== 200) {
       return Promise.reject(
         createResponseError(response.data.code, response.data.message)
@@ -153,67 +188,101 @@ service.interceptors.response.use(
     }
 
     if (config?.url?.includes("/users/refresh")) {
-      clearTokens()
-      redirectToLogin()
-      return Promise.reject(createResponseError(code, message))
+      return Promise.reject(createAuthError(message))
     }
 
     if (!config) {
-      redirectToLogin()
-      return Promise.reject(createResponseError(code, message))
+      return Promise.reject(createAuthError(message))
     }
-
-    const retryOriginalRequest = new Promise<
-      AxiosResponse<ApiResponse<unknown>>
-    >((resolve, reject) => {
-      pendingRequests.push({
-        config,
-        resolve,
-        reject,
-      })
-    })
-
-    if (isRefreshing) {
-      return retryOriginalRequest
-    }
-
-    isRefreshing = true
 
     try {
-      const newToken = await refreshToken()
-      localStorage.setItem("accessToken", newToken)
+      const { accessToken } = await refreshAuthSession()
+      config.headers.set("Authorization", `Bearer ${accessToken}`)
 
-      const currentPendingRequests = pendingRequests
-      pendingRequests = []
-
-      currentPendingRequests.forEach(({ config, resolve }) => {
-        config.headers.set("Authorization", `Bearer ${newToken}`)
-        resolve(service(config))
-      })
-
-      return retryOriginalRequest
+      return service(config)
     } catch (refreshError) {
-      clearTokens()
-
-      const handledError = createResponseError(
-        code ?? 401,
-        refreshError instanceof Error ? refreshError.message : message
+      return Promise.reject(
+        refreshError instanceof Error ? refreshError : createAuthError(message)
       )
-
-      const currentPendingRequests = pendingRequests
-      pendingRequests = []
-
-      currentPendingRequests.forEach(({ reject }) => {
-        reject(handledError)
-      })
-
-      redirectToLogin()
-      return retryOriginalRequest
-    } finally {
-      isRefreshing = false
     }
   }
 )
+
+const buildFetchHeaders = (
+  headers?: HeadersInit,
+  body?: BodyInit | null,
+  accessToken?: string
+): Headers => {
+  const nextHeaders = new Headers(headers)
+
+  if (!nextHeaders.has("Accept")) {
+    nextHeaders.set("Accept", "application/json")
+  }
+
+  if (body && !(body instanceof FormData) && !nextHeaders.has("Content-Type")) {
+    nextHeaders.set("Content-Type", "application/json")
+  }
+
+  if (accessToken) {
+    nextHeaders.set("Authorization", `Bearer ${accessToken}`)
+  }
+
+  return nextHeaders
+}
+
+export const authorizedFetch = async (
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> => {
+  const executeRequest = async (accessToken?: string): Promise<Response> => {
+    return fetch(input, {
+      ...init,
+      headers: buildFetchHeaders(init?.headers, init?.body, accessToken),
+    })
+  }
+
+  const firstResponse = await executeRequest(getAccessToken() ?? undefined)
+
+  if (firstResponse.status !== 401) {
+    return firstResponse
+  }
+
+  if (typeof input === "string" && input.includes("/users/refresh")) {
+    throw createAuthError("未授权，请重新登录")
+  }
+
+  const { accessToken } = await refreshAuthSession()
+  const retryResponse = await executeRequest(accessToken)
+
+  if (retryResponse.status === 401) {
+    throw createAuthError("未授权，请重新登录")
+  }
+
+  return retryResponse
+}
+
+export const requestBlob = async (
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Blob> => {
+  const response = await authorizedFetch(input, init)
+
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type") ?? ""
+
+    if (contentType.includes("application/json")) {
+      const payload = (await response.json()) as Partial<ApiResponse<unknown>>
+      throw createResponseError(
+        payload.code ?? response.status,
+        payload.message ?? response.statusText
+      )
+    }
+
+    throw createResponseError(response.status, response.statusText)
+  }
+
+  return response.blob()
+}
 
 export default async function request<T = unknown>(
   url: string,

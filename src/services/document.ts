@@ -1,9 +1,29 @@
+import { getRequestBaseURL, requestBlob } from "@/lib/request"
+import { downloadBlob } from "@/lib/utils"
 import request from "@/lib/request"
 import type {
   TDocumentListResult,
   TDocumentRecord,
   TRemoveDocumentsResult,
 } from "@/types/documents"
+
+const getDocumentDownloadUrl = (id: string) =>
+  import.meta.env.DEV
+    ? `/api/documents/${id}/download`
+    : `${getRequestBaseURL()}/documents/${id}/download`
+
+const buildDownloadFileName = (fileName: string, extension?: string) => {
+  const trimmedFileName = fileName.trim()
+  const trimmedExtension = extension?.trim().toLowerCase()
+
+  if (!trimmedExtension) {
+    return trimmedFileName
+  }
+
+  return trimmedFileName.toLowerCase().endsWith(`.${trimmedExtension}`)
+    ? trimmedFileName
+    : `${trimmedFileName}.${trimmedExtension}`
+}
 
 export async function documnetsUpload(data: FormData) {
   return await request<TDocumentRecord[]>("/documents/upload", {
@@ -40,4 +60,19 @@ export async function deleteAllDocumentById(data: { documentIds: string[] }) {
     method: "DELETE",
     data,
   })
+}
+
+export async function fetchDocumentFile(data: { id: string }) {
+  return await requestBlob(getDocumentDownloadUrl(data.id), {
+    method: "GET",
+  })
+}
+
+export async function downloadDocumentOriginalFile(data: {
+  id: string
+  fileName: string
+  extension?: string
+}) {
+  const blob = await fetchDocumentFile({ id: data.id })
+  downloadBlob(blob, buildDownloadFileName(data.fileName, data.extension))
 }

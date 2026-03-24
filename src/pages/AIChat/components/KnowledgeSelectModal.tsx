@@ -11,7 +11,6 @@ const KnowledgeSelectModal = ({
   open,
   onCancel,
   onConfirm,
-  confirmLoading,
 }: TKnowledgeSelectModalProps) => {
   const [searchValue, setSearchValue] = useState("")
   const [selectedKnowledge, setSelectedKnowledge] = useState<
@@ -46,7 +45,6 @@ const KnowledgeSelectModal = ({
       title="新建会话"
       width={700}
       centered
-      confirmLoading={confirmLoading}
       afterClose={() => {
         setSearchValue("")
         setSelectedKnowledge(undefined)
