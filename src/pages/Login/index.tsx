@@ -1,14 +1,19 @@
+import { useState } from "react"
 import { useRequest } from "ahooks"
 import { useNavigate } from "react-router"
+import { LockOutlined, MailOutlined } from "@ant-design/icons"
+import { Button, Form, Input } from "antd"
 
 import AuthPageShell from "@/components/auth/AuthPageShell"
 import { persistAuthSession } from "@/lib/auth"
 import { userLogin } from "@/services/user"
-import { Button, Form, Input } from "antd"
-import { LockOutlined, MailOutlined } from "@ant-design/icons"
 
 const Login = () => {
   const navigate = useNavigate()
+  const [form] = Form.useForm()
+  const [showPassword, setShowPassword] = useState(false)
+  const [password, setPassword] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
 
   const { runAsync, loading } = useRequest(userLogin, {
     manual: true,
@@ -18,38 +23,68 @@ const Login = () => {
   return (
     <AuthPageShell
       title="登录你的账号"
-      description="请输入邮箱和密码，继续访问知识前台。"
-      submitText="登录"
+      description="输入邮箱和密码，继续访问知识库工作台。"
       footerText="还没有账号？"
       footerLinkText="立即注册"
       footerLinkTo="/register"
-      imageAlt="登录页插图"
+      imageAlt="登录页互动插画"
+      password={password}
+      showPassword={showPassword}
+      isTyping={isTyping}
     >
       <Form
+        form={form}
         name="login-form"
-        initialValues={{ remember: true }}
-        style={{ maxWidth: 360 }}
+        layout="vertical"
         onFinish={runAsync}
+        onValuesChange={(changedValues) => {
+          if ("password" in changedValues) {
+            setPassword(changedValues.password ?? "")
+          }
+        }}
       >
         <Form.Item
           name="email"
+          label="邮箱"
           rules={[{ required: true, message: "请输入邮箱" }]}
         >
-          <Input prefix={<MailOutlined />} placeholder="请输入邮箱" />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "请输入密码" }]}
-        >
           <Input
-            prefix={<LockOutlined />}
-            type="password"
-            placeholder="请输入密码"
+            size="large"
+            prefix={<MailOutlined />}
+            placeholder="请输入邮箱"
+            autoComplete="email"
+            onFocus={() => setIsTyping(true)}
+            onBlur={() => setIsTyping(false)}
           />
         </Form.Item>
 
-        <Form.Item>
-          <Button block type="primary" htmlType="submit" loading={loading}>
+        <Form.Item
+          name="password"
+          label="密码"
+          rules={[{ required: true, message: "请输入密码" }]}
+        >
+          <Input.Password
+            size="large"
+            prefix={<LockOutlined />}
+            placeholder="请输入密码"
+            autoComplete="current-password"
+            onFocus={() => setIsTyping(true)}
+            onBlur={() => setIsTyping(false)}
+            visibilityToggle={{
+              visible: showPassword,
+              onVisibleChange: (visible) => setShowPassword(visible),
+            }}
+          />
+        </Form.Item>
+
+        <Form.Item className="mt-6 mb-0">
+          <Button
+            block
+            type="primary"
+            size="large"
+            htmlType="submit"
+            loading={loading}
+          >
             登录
           </Button>
         </Form.Item>

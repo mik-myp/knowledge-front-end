@@ -268,6 +268,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
       collapsible
       collapsed={collapsed}
       theme="light"
+      width={240}
       className="[&_.ant-layout-sider-children]:flex [&_.ant-layout-sider-children]:min-h-0 [&_.ant-layout-sider-children]:flex-col"
     >
       <Menu
@@ -348,6 +349,8 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
         afterClose={handleAfterClose}
         onOk={handleOk}
         confirmLoading={createKnowledgeLoading || updateKnowledgeByIdLoading}
+        centered
+        width={600}
       >
         <Form
           form={form}

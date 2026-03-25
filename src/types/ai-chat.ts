@@ -1,7 +1,4 @@
-import type {
-  TChatConversationItem,
-  TChatMessageRecord,
-} from "@/types/chat"
+import type { TChatConversationItem, TChatMessageRecord } from "@/types/chat"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 
 export type TChatListMessageItem = {
@@ -11,6 +8,7 @@ export type TChatListMessageItem = {
 }
 
 export type TChatListProps = {
+  conversationKey: string
   messages: TChatListMessageItem[]
   messageLoading: boolean
 }

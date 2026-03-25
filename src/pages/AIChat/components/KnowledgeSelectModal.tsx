@@ -40,7 +40,6 @@ const KnowledgeSelectModal = ({
   return (
     <Modal
       open={open}
-      closable={false}
       onCancel={onCancel}
       title="新建会话"
       width={700}

@@ -386,7 +386,6 @@ const AIChat = () => {
   )
 
   const {
-    messages,
     parsedMessages,
     onRequest,
     queueRequest,
@@ -460,14 +459,15 @@ const AIChat = () => {
       draftKey: string | undefined,
       sessionId: string
     ) => {
-      hydratedMessagesRef.current.set(
-        sessionId,
-        messages.map((item) => ({
-          id: item.id,
-          status: item.status,
-          message: item.message,
-        }))
-      )
+      try {
+        const result = await loadConversationMessagesAsync(sessionId)
+        hydratedMessagesRef.current.set(
+          sessionId,
+          toDefaultMessages(result.messages)
+        )
+      } catch {
+        hydratedMessagesRef.current.delete(sessionId)
+      }
 
       activeConversationKeyRef.current = sessionId
 
@@ -480,7 +480,11 @@ const AIChat = () => {
       setActiveConversationKey(sessionId)
       await loadSessionsAsync()
     }
-  }, [loadSessionsAsync, messages, setActiveConversationKey])
+  }, [
+    loadConversationMessagesAsync,
+    loadSessionsAsync,
+    setActiveConversationKey,
+  ])
 
   useEffect(() => {
     void loadSessionsAsync()
@@ -732,6 +736,7 @@ const AIChat = () => {
           <>
             <div className="min-h-0 flex-1">
               <ChatList
+                conversationKey={activeConversationKey}
                 messages={parsedMessages}
                 messageLoading={shouldShowMessageLoading}
               />

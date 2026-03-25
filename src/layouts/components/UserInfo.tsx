@@ -3,7 +3,7 @@ import { userLogout, userMe } from "@/services/user"
 import useUser from "@/stores/useUser"
 import { LogoutOutlined } from "@ant-design/icons"
 import { useRequest } from "ahooks"
-import { Avatar, Dropdown, type MenuProps } from "antd"
+import { Avatar, Dropdown, Skeleton, type MenuProps } from "antd"
 import { useNavigate } from "react-router"
 
 type MenuItem = Required<MenuProps>["items"][number]
@@ -24,7 +24,7 @@ const UserInfo = () => {
   const { setUser } = useUser()
   const navigate = useNavigate()
 
-  const { data: user } = useRequest(userMe, {
+  const { data: user, loading } = useRequest(userMe, {
     onSuccess: (data) => setUser(data),
   })
 
@@ -52,7 +52,7 @@ const UserInfo = () => {
         return (
           <>
             <div className="flex flex-row items-center justify-center gap-2 px-(--ant-control-padding-horizontal) py-(--ant-dropdown-padding-block)">
-              <Avatar style={{ backgroundColor: "#87d068" }}>
+              <Avatar className="cursor-default bg-(--ant-color-primary)">
                 {user?.username}
               </Avatar>
               <div className="flex flex-col">
@@ -65,7 +65,13 @@ const UserInfo = () => {
         )
       }}
     >
-      <Avatar style={{ backgroundColor: "#87d068" }}>{user?.username}</Avatar>
+      {loading ? (
+        <Skeleton.Avatar active className="flex items-center justify-center" />
+      ) : (
+        <Avatar className="cursor-default bg-(--ant-color-primary)">
+          {user?.username}
+        </Avatar>
+      )}
     </Dropdown>
   )
 }

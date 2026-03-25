@@ -1,0 +1,102 @@
+import { useEffect, useRef, useState } from "react"
+
+interface EyeBallProps {
+  size?: number
+  pupilSize?: number
+  maxDistance?: number
+  eyeColor?: string
+  pupilColor?: string
+  isBlinking?: boolean
+  forceLookX?: number
+  forceLookY?: number
+}
+
+const EyeBall = ({
+  size = 48,
+  pupilSize = 16,
+  maxDistance = 10,
+  eyeColor = "white",
+  pupilColor = "black",
+  isBlinking = false,
+  forceLookX,
+  forceLookY,
+}: EyeBallProps) => {
+  const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 })
+  const eyeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (forceLookX !== undefined && forceLookY !== undefined) {
+      setPupilPosition({ x: forceLookX, y: forceLookY })
+      return
+    }
+
+    const updatePupilPosition = (clientX: number, clientY: number) => {
+      const eye = eyeRef.current
+
+      if (!eye) {
+        setPupilPosition({ x: 0, y: 0 })
+        return
+      }
+
+      const eyeRect = eye.getBoundingClientRect()
+      const eyeCenterX = eyeRect.left + eyeRect.width / 2
+      const eyeCenterY = eyeRect.top + eyeRect.height / 2
+
+      const deltaX = clientX - eyeCenterX
+      const deltaY = clientY - eyeCenterY
+      const distance = Math.min(
+        Math.sqrt(deltaX ** 2 + deltaY ** 2),
+        maxDistance
+      )
+
+      const angle = Math.atan2(deltaY, deltaX)
+      const x = Math.cos(angle) * distance
+      const y = Math.sin(angle) * distance
+
+      setPupilPosition({ x, y })
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      updatePupilPosition(event.clientX, event.clientY)
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+
+    const frameId = requestAnimationFrame(() => {
+      updatePupilPosition(window.innerWidth / 2, window.innerHeight / 2)
+    })
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      window.removeEventListener("mousemove", handleMouseMove)
+    }
+  }, [forceLookX, forceLookY, maxDistance])
+
+  return (
+    <div
+      ref={eyeRef}
+      className="flex items-center justify-center rounded-full transition-all duration-150"
+      style={{
+        width: `${size}px`,
+        height: isBlinking ? "2px" : `${size}px`,
+        backgroundColor: eyeColor,
+        overflow: "hidden",
+      }}
+    >
+      {!isBlinking && (
+        <div
+          className="rounded-full"
+          style={{
+            width: `${pupilSize}px`,
+            height: `${pupilSize}px`,
+            backgroundColor: pupilColor,
+            transform: `translate(${pupilPosition.x}px, ${pupilPosition.y}px)`,
+            transition: "transform 0.1s ease-out",
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+export default EyeBall
