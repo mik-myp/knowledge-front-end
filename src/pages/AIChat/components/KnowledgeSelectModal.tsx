@@ -4,7 +4,7 @@ import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 import type { TKnowledgeSelectModalProps } from "@/types/ai-chat"
 import { SearchOutlined } from "@ant-design/icons"
 import { useDebounce, useRequest } from "ahooks"
-import { Empty, Input, Modal } from "antd"
+import { Empty, Input, Modal, Spin } from "antd"
 import { useEffect, useState } from "react"
 
 /**
@@ -71,7 +71,9 @@ const KnowledgeSelectModal = ({
           disabled={loading}
         />
         <div className="mt-4">
-          {filteredKnowledges?.length ? (
+          {loading ? (
+            <Spin className="flex h-60 items-center justify-center" />
+          ) : filteredKnowledges?.length ? (
             <div className="scrollbar-thin flex h-60 flex-col gap-2 overflow-y-auto">
               {filteredKnowledges.map((item) => {
                 return (
