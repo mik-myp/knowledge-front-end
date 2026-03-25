@@ -7,6 +7,18 @@ import type {
 } from "@/types/chat"
 import { DefaultChatProvider } from "@ant-design/x-sdk"
 
+/**
+ * 创建消息对象。
+ * @param params 参数对象。
+ * @param params.id 资源 ID。
+ * @param params.sessionId 会话 ID。
+ * @param params.messageType 消息类型。
+ * @param params.content 内容。
+ * @param params.streamStatus 流式状态。
+ * @param params.sequence 消息序号。
+ * @param params.sources 来源信息列表。
+ * @returns 返回对话消息记录。
+ */
 const createMessage = (params: {
   id: string
   sessionId: string
@@ -32,6 +44,11 @@ const createMessage = (params: {
   }
 }
 
+/**
+ * 规范化响应数据。
+ * @param response 响应对象。
+ * @returns 返回对话问答响应或undefined。
+ */
 const normalizeResponse = (
   response?: TChatAskResponse | { data?: string }
 ): TChatAskResponse | undefined => {
@@ -54,11 +71,19 @@ const normalizeResponse = (
   }
 }
 
+/**
+ * 封装对话请求参数和流式消息转换逻辑。
+ */
 export default class ChatProvider extends DefaultChatProvider<
   TChatMessageRecord,
   TChatAskRequest,
   TChatAskResponse
 > {
+  /**
+   * 将本地请求参数整理为接口可接受的格式。
+   * @param requestParams 当前对话请求参数。
+   * @returns 返回发送到后端前的标准化请求参数。
+   */
   transformParams(requestParams: Partial<TChatAskRequest>) {
     const nextParams: Pick<TChatAskRequest, "messages"> & {
       sessionId?: string
@@ -80,18 +105,30 @@ export default class ChatProvider extends DefaultChatProvider<
     }
   }
 
+  /**
+   * 根据当前请求生成本地占位消息。
+   * @param requestParams 当前对话请求参数。
+   * @returns 返回用于立即渲染的本地消息记录。
+   */
   transformLocalMessage(requestParams: Partial<TChatAskRequest>) {
     const firstMessage = requestParams.messages?.[0]
 
     return createMessage({
       id: `local-${Date.now()}`,
-      sessionId:
-        requestParams.sessionId ?? requestParams.localSessionId ?? "",
+      sessionId: requestParams.sessionId ?? requestParams.localSessionId ?? "",
       messageType: firstMessage?.role ?? "human",
       content: firstMessage?.content ?? "",
     })
   }
 
+  /**
+   * 将流式响应分片转换为前端消息对象。
+   * @param info 流式转换上下文。
+   * @param info.originMessage 当前已存在的消息对象。
+   * @param info.chunk 最新收到的响应分片。
+   * @param info.chunks 已接收的全部响应分片。
+   * @returns 返回适合渲染的最新消息记录。
+   */
   transformMessage(info: {
     originMessage?: TChatMessageRecord
     chunk: TChatAskResponse | { data?: string }
@@ -102,7 +139,10 @@ export default class ChatProvider extends DefaultChatProvider<
       normalizeResponse(info.chunk) ??
       normalizeResponse(info.chunks[info.chunks.length - 1])
     const sessionId =
-      response?.sessionId ?? info.originMessage?.sessionId ?? latestMessage?.sessionId ?? ""
+      response?.sessionId ??
+      info.originMessage?.sessionId ??
+      latestMessage?.sessionId ??
+      ""
 
     if (!response) {
       return (
@@ -125,17 +165,19 @@ export default class ChatProvider extends DefaultChatProvider<
       info.originMessage?.content ||
       ""
     const hasErrorContent = Boolean(response.error)
-    const hasAnswerContent = Boolean(response.message?.content || response.answer)
+    const hasAnswerContent = Boolean(
+      response.message?.content || response.answer
+    )
     const hasProgressContent = Boolean(
       response.progress || info.originMessage?.streamStatus === "progress"
     )
     const streamStatus = hasErrorContent
       ? "error"
       : hasAnswerContent
-      ? "answer"
-      : hasProgressContent
-        ? "progress"
-        : undefined
+        ? "answer"
+        : hasProgressContent
+          ? "progress"
+          : undefined
 
     return createMessage({
       id:

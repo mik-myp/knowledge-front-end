@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 
+/**
+ * 描述眼球组件的属性。
+ */
 interface EyeBallProps {
   size?: number
   pupilSize?: number
@@ -11,6 +14,19 @@ interface EyeBallProps {
   forceLookY?: number
 }
 
+/**
+ * 渲染EyeBall组件。
+ * @param props 组件属性。
+ * @param props.size 大小。
+ * @param props.pupilSize pupil大小。
+ * @param props.maxDistance maxDistance。
+ * @param props.eyeColor eyeColor。
+ * @param props.pupilColor pupilColor。
+ * @param props.isBlinking isBlinking。
+ * @param props.forceLookX forceLookX。
+ * @param props.forceLookY forceLookY。
+ * @returns 返回组件渲染结果。
+ */
 const EyeBall = ({
   size = 48,
   pupilSize = 16,

@@ -4,17 +4,29 @@ import { useEffect, useState } from "react"
 import { Empty, Spin } from "antd"
 import { fetchDocumentFile } from "@/services/document"
 
+/**
+ * 描述 DOCX 预览组件的属性。
+ */
 type DocxPreviewProps = {
   documentId: string
 }
 
+/**
+ * 渲染Docx预览组件。
+ * @param props 组件属性。
+ * @param props.documentId 文档 ID。
+ * @returns 返回组件渲染结果。
+ */
 const DocxPreview = ({ documentId }: DocxPreviewProps) => {
   const [html, setHtml] = useState("")
   const [loadFailed, setLoadFailed] = useState(false)
 
-  const { runAsync: fetchDocumentFileAsync, loading } = useRequest(fetchDocumentFile, {
-    manual: true,
-  })
+  const { runAsync: fetchDocumentFileAsync, loading } = useRequest(
+    fetchDocumentFile,
+    {
+      manual: true,
+    }
+  )
 
   useEffect(() => {
     let cancelled = false

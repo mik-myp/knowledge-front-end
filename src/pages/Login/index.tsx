@@ -5,9 +5,19 @@ import { LockOutlined, MailOutlined } from "@ant-design/icons"
 import { Button, Form, Input } from "antd"
 
 import AuthPageShell from "@/components/auth/AuthPageShell"
+import { API_CONSTRAINTS } from "@/contracts/api-contracts"
 import { persistAuthSession } from "@/lib/auth"
+import {
+  FORM_LIMITS,
+  createEmailRule,
+  createRequiredStringRule,
+} from "@/lib/formRules"
 import { userLogin } from "@/services/user"
 
+/**
+ * 渲染登录组件。
+ * @returns 返回组件渲染结果。
+ */
 const Login = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
@@ -46,13 +56,14 @@ const Login = () => {
         <Form.Item
           name="email"
           label="邮箱"
-          rules={[{ required: true, message: "请输入邮箱" }]}
+          rules={[createEmailRule("请输入邮箱")]}
         >
           <Input
             size="large"
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
             autoComplete="email"
+            maxLength={FORM_LIMITS.email}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
           />
@@ -61,13 +72,21 @@ const Login = () => {
         <Form.Item
           name="password"
           label="密码"
-          rules={[{ required: true, message: "请输入密码" }]}
+          rules={[
+            createRequiredStringRule({
+              fieldName: "password",
+              minLength: API_CONSTRAINTS.user.passwordMinLength,
+              maxLength: API_CONSTRAINTS.user.passwordMaxLength,
+              requiredMessage: "请输入密码",
+            }),
+          ]}
         >
           <Input.Password
             size="large"
             prefix={<LockOutlined />}
             placeholder="请输入密码"
             autoComplete="current-password"
+            maxLength={FORM_LIMITS.password}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
             visibilityToggle={{

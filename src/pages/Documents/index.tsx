@@ -19,9 +19,21 @@ import { useState } from "react"
 import dayjs from "dayjs"
 import { useNavigate } from "react-router"
 
+/**
+ * 表格可视区域需要扣除的固定高度。
+ */
 const diffHeight = 342
+
+/**
+ * 获取TableScrollY。
+ * @returns 返回数值结果。
+ */
 const getTableScrollY = (): number => window.innerHeight - diffHeight
 
+/**
+ * 渲染文档组件。
+ * @returns 返回组件渲染结果。
+ */
 const Documents = () => {
   const navigate = useNavigate()
   const { version, invalidate } = useDocumentsVersion()

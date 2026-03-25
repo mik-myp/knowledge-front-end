@@ -10,18 +10,45 @@ import {
 
 const { Paragraph, Title } = Typography
 
+/**
+ * 按需加载 Markdown 预览组件。
+ */
 const MarkdownPreview = lazy(() => import("./components/MarkdownPreview"))
+
+/**
+ * 按需加载 PDF 预览组件。
+ */
 const PdfPreview = lazy(() => import("./components/PdfPreview"))
+
+/**
+ * 按需加载 DOCX 预览组件。
+ */
 const DocxPreview = lazy(() => import("./components/DocxPreview"))
 
-const supportedPreviewExtensions = new Set(["md", "markdown", "txt", "pdf", "docx"])
+/**
+ * 记录当前页面支持在线预览的文件扩展名。
+ */
+const supportedPreviewExtensions = new Set([
+  "md",
+  "markdown",
+  "txt",
+  "pdf",
+  "docx",
+])
 
+/**
+ * 定义预览Fallback。
+ */
 const previewFallback = (
   <div className="flex h-full items-center justify-center">
     <Spin size="large" />
   </div>
 )
 
+/**
+ * 渲染文档Detail组件。
+ * @returns 返回组件渲染结果。
+ */
 const DocumentDetail = () => {
   const { id } = useParams()
 
@@ -56,7 +83,9 @@ const DocumentDetail = () => {
 
   const renderPreview = () => {
     if (!supportedPreviewExtensions.has(extension)) {
-      return <Empty description={`暂不支持预览 ${extension.toUpperCase()} 文件`} />
+      return (
+        <Empty description={`暂不支持预览 ${extension.toUpperCase()} 文件`} />
+      )
     }
 
     if (extension === "md" || extension === "markdown") {

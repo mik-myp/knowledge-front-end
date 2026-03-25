@@ -11,6 +11,10 @@ import XProvider from "@ant-design/x/es/x-provider"
 
 dayjs.locale("zh-cn")
 
+/**
+ * 渲染App组件。
+ * @returns 返回组件渲染结果。
+ */
 function App() {
   const configProps = useIllustrationTheme()
 

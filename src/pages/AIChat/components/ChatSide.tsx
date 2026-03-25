@@ -1,3 +1,5 @@
+import { API_CONSTRAINTS } from "@/contracts/api-contracts"
+import { FORM_LIMITS, createRequiredStringRule } from "@/lib/formRules"
 import type { TChatSideProps } from "@/types/ai-chat"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 import {
@@ -12,6 +14,12 @@ import { useState } from "react"
 import { useNavigate } from "react-router"
 import KnowledgeSelectModal from "./KnowledgeSelectModal"
 
+/**
+ * 渲染会话列表中的标题内容。
+ * @param conversation 当前会话对象。
+ * @param titleColor 标题文字颜色，可选。
+ * @returns 返回会话标签对应的 JSX 结构。
+ */
 const renderConversationLabel = (
   conversation: TChatSideProps["conversations"][number],
   titleColor?: string
@@ -38,6 +46,19 @@ const renderConversationLabel = (
   )
 }
 
+/**
+ * 渲染对话侧栏组件。
+ * @param props 组件属性。
+ * @param props.conversations 会话列表。
+ * @param props.activeConversationKey 有效会话Key。
+ * @param props.setActiveConversationKey 设置有效会话Key。
+ * @param props.onCreateConversation on创建会话。
+ * @param props.onRenameConversation onRename会话。
+ * @param props.onRemoveConversation on删除会话。
+ * @param props.updatingConversation updating会话。
+ * @param props.loading loading。
+ * @returns 返回组件渲染结果。
+ */
 const ChatSide = ({
   conversations,
   activeConversationKey,
@@ -207,14 +228,18 @@ const ChatSide = ({
           <Form.Item
             name="title"
             rules={[
-              {
-                required: true,
-                whitespace: true,
-                message: "请输入新的会话标题",
-              },
+              createRequiredStringRule({
+                fieldName: "title",
+                minLength: API_CONSTRAINTS.chat.sessionTitleMinLength,
+                maxLength: API_CONSTRAINTS.chat.sessionTitleMaxLength,
+                requiredMessage: "请输入新的会话标题",
+              }),
             ]}
           >
-            <Input placeholder="请输入新的会话标题" maxLength={50} />
+            <Input
+              placeholder="请输入新的会话标题"
+              maxLength={FORM_LIMITS.chatSessionTitle}
+            />
           </Form.Item>
         </Form>
       </Modal>

@@ -3,6 +3,9 @@ import { theme } from "antd"
 import { createStyles } from "antd-style"
 import type { XProviderProps } from "@ant-design/x"
 
+/**
+ * 生成插画风主题需要复用的样式片段。
+ */
 export const useStyles = createStyles(({ css, cssVar }) => {
   const illustrationBorder = {
     border: `${cssVar.lineWidth} solid ${cssVar.colorBorder}`,
@@ -57,6 +60,10 @@ export const useStyles = createStyles(({ css, cssVar }) => {
   }
 })
 
+/**
+ * 生成 Ant Design X Provider 使用的插画风主题配置。
+ * @returns 返回带有主题令牌和组件样式覆盖的 Provider 配置。
+ */
 const useIllustrationTheme = () => {
   const { styles } = useStyles()
 

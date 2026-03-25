@@ -7,6 +7,14 @@ import { useDebounce, useRequest } from "ahooks"
 import { Empty, Input, Modal } from "antd"
 import { useEffect, useState } from "react"
 
+/**
+ * 渲染知识库Select弹窗组件。
+ * @param props 组件属性。
+ * @param props.open open。
+ * @param props.onCancel onCancel。
+ * @param props.onConfirm onConfirm。
+ * @returns 返回组件渲染结果。
+ */
 const KnowledgeSelectModal = ({
   open,
   onCancel,

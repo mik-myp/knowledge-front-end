@@ -1,4 +1,10 @@
 import { cn } from "@/lib/utils"
+import { API_CONSTRAINTS } from "@/contracts/api-contracts"
+import {
+  FORM_LIMITS,
+  createOptionalStringRule,
+  createRequiredStringRule,
+} from "@/lib/formRules"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import {
   createKnowledge,
@@ -35,8 +41,14 @@ import { useLocation, useNavigate } from "react-router"
 
 const { Sider } = Layout
 
+/**
+ * 表示侧边栏菜单项的类型。
+ */
 type MenuItem = Required<MenuProps>["items"][number]
 
+/**
+ * 描述侧边栏使用的 CSS 变量样式对象。
+ */
 type CSSVariableStyle = CSSProperties &
   Record<
     | "--ant-menu-active-bar-border-width"
@@ -47,6 +59,9 @@ type CSSVariableStyle = CSSProperties &
     string
   >
 
+/**
+ * 侧边栏主导航菜单项。
+ */
 const items: MenuItem[] = [
   {
     key: "/",
@@ -68,10 +83,22 @@ const items: MenuItem[] = [
   },
 ]
 
+/**
+ * 侧边栏折叠时的固定宽度。
+ */
 const collapsedSiderWidth = 80
 
+/**
+ * 侧边栏操作按钮的统一尺寸。
+ */
 const actionButtonSize = 32
 
+/**
+ * 渲染NavSider组件。
+ * @param props 组件属性。
+ * @param props.collapsed collapsed。
+ * @returns 返回组件渲染结果。
+ */
 const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   const { pathname } = useLocation()
 
@@ -366,16 +393,27 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
             label="名称"
             name="name"
             rules={[
-              {
-                required: true,
-                message: "请输入名称",
-              },
+              createRequiredStringRule({
+                fieldName: "name",
+                minLength: API_CONSTRAINTS.knowledgeBase.nameMinLength,
+                maxLength: API_CONSTRAINTS.knowledgeBase.nameMaxLength,
+                requiredMessage: "请输入名称",
+              }),
             ]}
           >
-            <Input />
+            <Input maxLength={FORM_LIMITS.knowledgeBaseName} />
           </Form.Item>
-          <Form.Item label="描述" name="description">
-            <Input.TextArea />
+          <Form.Item
+            label="描述"
+            name="description"
+            rules={[
+              createOptionalStringRule({
+                fieldName: "description",
+                maxLength: API_CONSTRAINTS.knowledgeBase.descriptionMaxLength,
+              }),
+            ]}
+          >
+            <Input.TextArea maxLength={FORM_LIMITS.knowledgeBaseDescription} />
           </Form.Item>
         </Form>
       </Modal>

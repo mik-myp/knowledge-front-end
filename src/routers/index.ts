@@ -1,5 +1,8 @@
 import { createBrowserRouter } from "react-router"
 
+/**
+ * 定义应用的浏览器路由表。
+ */
 const router = createBrowserRouter([
   {
     path: "/login",

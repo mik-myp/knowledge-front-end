@@ -1,5 +1,16 @@
+import type {
+  AskChatInput,
+  AskChatMessageInput,
+} from "@/contracts/api-contracts"
+
+/**
+ * 定义对话消息类型的类型结构。
+ */
 export type TChatMessageType = "system" | "human" | "ai" | "tool"
 
+/**
+ * 定义对话的数据记录结构。
+ */
 export type TChatRecord = {
   id: string
   userId: string
@@ -9,6 +20,9 @@ export type TChatRecord = {
   updatedAt: string
 }
 
+/**
+ * 定义对话会话Item的类型结构。
+ */
 export type TChatConversationItem = {
   key: string
   label: string
@@ -20,6 +34,9 @@ export type TChatConversationItem = {
   serverSessionId?: string
 }
 
+/**
+ * 定义对话消息来源的类型结构。
+ */
 export type TChatMessageSource = {
   documentId: string
   documentName: string
@@ -30,6 +47,9 @@ export type TChatMessageSource = {
   score?: number
 }
 
+/**
+ * 定义对话消息的数据记录结构。
+ */
 export type TChatMessageRecord = {
   id: string
   userId: string
@@ -58,18 +78,21 @@ export type TChatMessageRecord = {
   updatedAt: string
 }
 
-export type TChatAskMessage = {
-  role: TChatMessageType
-  content: string
-}
+/**
+ * 定义对话问答消息的类型结构。
+ */
+export type TChatAskMessage = AskChatMessageInput
 
-export type TChatAskRequest = {
-  sessionId?: string
-  knowledgeBaseId?: string
+/**
+ * 定义对话问答请求的类型结构。
+ */
+export type TChatAskRequest = AskChatInput & {
   localSessionId?: string
-  messages: TChatAskMessage[]
 }
 
+/**
+ * 定义对话问答响应的类型结构。
+ */
 export type TChatAskResponse = {
   sessionId: string
   answer: string

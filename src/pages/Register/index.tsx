@@ -5,9 +5,19 @@ import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons"
 import { Button, Form, Input } from "antd"
 
 import AuthPageShell from "@/components/auth/AuthPageShell"
+import { API_CONSTRAINTS } from "@/contracts/api-contracts"
 import { persistAuthSession } from "@/lib/auth"
+import {
+  FORM_LIMITS,
+  createEmailRule,
+  createRequiredStringRule,
+} from "@/lib/formRules"
 import { userRegister } from "@/services/user"
 
+/**
+ * 渲染注册组件。
+ * @returns 返回组件渲染结果。
+ */
 const Register = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
@@ -46,13 +56,21 @@ const Register = () => {
         <Form.Item
           name="username"
           label="用户名"
-          rules={[{ required: true, message: "请输入用户名" }]}
+          rules={[
+            createRequiredStringRule({
+              fieldName: "username",
+              minLength: API_CONSTRAINTS.user.usernameMinLength,
+              maxLength: API_CONSTRAINTS.user.usernameMaxLength,
+              requiredMessage: "请输入用户名",
+            }),
+          ]}
         >
           <Input
             size="large"
             prefix={<UserOutlined />}
             placeholder="请输入用户名"
             autoComplete="username"
+            maxLength={FORM_LIMITS.username}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
           />
@@ -61,13 +79,14 @@ const Register = () => {
         <Form.Item
           name="email"
           label="邮箱"
-          rules={[{ required: true, message: "请输入邮箱" }]}
+          rules={[createEmailRule("请输入邮箱")]}
         >
           <Input
             size="large"
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
             autoComplete="email"
+            maxLength={FORM_LIMITS.email}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
           />
@@ -76,13 +95,21 @@ const Register = () => {
         <Form.Item
           name="password"
           label="密码"
-          rules={[{ required: true, message: "请输入密码" }]}
+          rules={[
+            createRequiredStringRule({
+              fieldName: "password",
+              minLength: API_CONSTRAINTS.user.passwordMinLength,
+              maxLength: API_CONSTRAINTS.user.passwordMaxLength,
+              requiredMessage: "请输入密码",
+            }),
+          ]}
         >
           <Input.Password
             size="large"
             prefix={<LockOutlined />}
             placeholder="请输入密码"
             autoComplete="new-password"
+            maxLength={FORM_LIMITS.password}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
             visibilityToggle={{

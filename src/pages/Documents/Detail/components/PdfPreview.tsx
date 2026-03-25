@@ -12,10 +12,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
 
 const { Text } = Typography
 
+/**
+ * 描述 PDF 预览组件的属性。
+ */
 type PdfPreviewProps = {
   documentId: string
 }
 
+/**
+ * 渲染Pdf预览组件。
+ * @param props 组件属性。
+ * @param props.documentId 文档 ID。
+ * @returns 返回组件渲染结果。
+ */
 const PdfPreview = ({ documentId }: PdfPreviewProps) => {
   const previewRef = useRef<HTMLDivElement>(null)
   const previewSize = useSize(previewRef)
@@ -24,9 +33,12 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [loadFailed, setLoadFailed] = useState(false)
 
-  const { runAsync: fetchDocumentFileAsync, loading } = useRequest(fetchDocumentFile, {
-    manual: true,
-  })
+  const { runAsync: fetchDocumentFileAsync, loading } = useRequest(
+    fetchDocumentFile,
+    {
+      manual: true,
+    }
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -105,7 +117,10 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
         </Text>
       </Flex>
 
-      <div ref={previewRef} className="scrollbar-thin flex-1 overflow-auto rounded-xl bg-black/3 p-6">
+      <div
+        ref={previewRef}
+        className="scrollbar-thin flex-1 overflow-auto rounded-xl bg-black/3 p-6"
+      >
         <Document
           key={previewUrl}
           file={previewUrl}

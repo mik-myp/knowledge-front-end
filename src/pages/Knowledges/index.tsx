@@ -28,8 +28,17 @@ import { useNavigate, useParams } from "react-router"
 import UploadBtn from "../Documents/components/UploadBtn"
 
 const { Text } = Typography
+
+/**
+ * 定义文档页码大小。
+ */
 const documentsPageSize = 12
 
+/**
+ * 格式化文件大小。
+ * @param size 大小。
+ * @returns 返回字符串结果。
+ */
 const formatFileSize = (size: number): string => {
   if (size < 1024) {
     return `${size} KB`
@@ -38,6 +47,11 @@ const formatFileSize = (size: number): string => {
   return `${(size / 1024).toFixed(2)} MB`
 }
 
+/**
+ * 获取ExtensionPalette。
+ * @param extension extension。
+ * @returns 返回对象。
+ */
 const getExtensionPalette = (
   extension: string
 ): {
@@ -78,6 +92,9 @@ const getExtensionPalette = (
   }
 }
 
+/**
+ * 定义知识库文档InfiniteData的类型结构。
+ */
 type TKnowledgeDocumentsInfiniteData = {
   list: TDocumentListRecord[]
   page: number
@@ -85,6 +102,10 @@ type TKnowledgeDocumentsInfiniteData = {
   total: number
 }
 
+/**
+ * 渲染Knowledges组件。
+ * @returns 返回组件渲染结果。
+ */
 const Knowledges = () => {
   const { id } = useParams()
   const navigate = useNavigate()

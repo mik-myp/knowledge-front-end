@@ -5,6 +5,9 @@ import { Link } from "react-router"
 import EyeBall from "./EyeBall"
 import Pupil from "./Pupil"
 
+/**
+ * 定义认证页码Shell的属性结构。
+ */
 type AuthPageShellProps = {
   title: string
   description: string
@@ -18,12 +21,29 @@ type AuthPageShellProps = {
   isTyping?: boolean
 }
 
+/**
+ * 描述角色面部和身体跟随鼠标时的位移状态。
+ */
 type CharacterMotion = {
   faceX: number
   faceY: number
   bodySkew: number
 }
 
+/**
+ * 渲染认证页码Shell组件。
+ * @param props 组件属性。
+ * @param props.title 标题。
+ * @param props.description 描述信息。
+ * @param props.footerText footerText。
+ * @param props.footerLinkText footerLinkText。
+ * @param props.footerLinkTo footerLinkTo。
+ * @param props.children children。
+ * @param props.showPassword show密码。
+ * @param props.password 用户密码。
+ * @param props.isTyping isTyping。
+ * @returns 返回组件渲染结果。
+ */
 const AuthPageShell = ({
   title,
   description,

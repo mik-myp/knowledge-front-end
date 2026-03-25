@@ -6,8 +6,14 @@ import { useRequest } from "ahooks"
 import { Avatar, Dropdown, Skeleton, type MenuProps } from "antd"
 import { useNavigate } from "react-router"
 
+/**
+ * 表示下拉菜单项的类型。
+ */
 type MenuItem = Required<MenuProps>["items"][number]
 
+/**
+ * 用户头像下拉菜单的选项列表。
+ */
 const items: MenuItem[] = [
   {
     type: "divider",
@@ -20,6 +26,10 @@ const items: MenuItem[] = [
   },
 ]
 
+/**
+ * 渲染用户Info组件。
+ * @returns 返回组件渲染结果。
+ */
 const UserInfo = () => {
   const { setUser } = useUser()
   const navigate = useNavigate()

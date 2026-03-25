@@ -20,6 +20,10 @@ import { cn } from "@/lib/utils"
 
 const { Paragraph, Text, Title } = Typography
 
+/**
+ * 并行加载首页概览所需的数据。
+ * @returns 返回首页展示需要的用户、知识库、文档和会话信息。
+ */
 const loadHomeOverview = async () => {
   const [user, knowledges, documentResult, sessions] = await Promise.all([
     userMe(),
@@ -39,6 +43,11 @@ const loadHomeOverview = async () => {
   }
 }
 
+/**
+ * 格式化首页展示的时间文本。
+ * @param value 需要格式化的时间字符串。
+ * @returns 返回适合首页展示的时间文案。
+ */
 const formatDateTime = (value?: string) => {
   if (!value) {
     return "刚刚进入工作台"
@@ -47,10 +56,19 @@ const formatDateTime = (value?: string) => {
   return dayjs(value).format("YYYY-MM-DD HH:mm")
 }
 
+/**
+ * 获取文档来源类型对应的展示文案。
+ * @param sourceType 文档来源类型。
+ * @returns 返回前端展示使用的来源名称。
+ */
 const getSourceTypeLabel = (sourceType: "upload" | "editor") => {
   return sourceType === "upload" ? "上传文档" : "编辑器文档"
 }
 
+/**
+ * 根据当前时间生成首页问候语。
+ * @returns 返回早上、下午或晚上的问候文本。
+ */
 const getGreeting = () => {
   const hour = dayjs().hour()
 
@@ -65,6 +83,10 @@ const getGreeting = () => {
   return "晚上好"
 }
 
+/**
+ * 渲染Home组件。
+ * @returns 返回组件渲染结果。
+ */
 const Home = () => {
   const navigate = useNavigate()
   const { styles } = useStyles()

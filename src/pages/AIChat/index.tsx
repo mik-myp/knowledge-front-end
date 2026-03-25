@@ -28,25 +28,61 @@ import ChatList from "./components/ChatList"
 import ChatSender from "./components/ChatSender"
 import ChatSide from "./components/ChatSide"
 
+/**
+ * 对话问答接口的完整请求地址。
+ */
 const chatAskUrl = `${getRequestBaseURL()}/chat/ask`
+
+/**
+ * 新建会话在前端侧栏中的固定标识。
+ */
 const NEW_CONVERSATION_KEY = "new-conversation"
+
+/**
+ * 本地草稿会话使用的键名前缀。
+ */
 const LOCAL_CONVERSATION_KEY_PREFIX = "local-conversation-"
 
+/**
+ * 判断是否为草稿会话Key。
+ * @param key key。
+ * @returns 返回布尔值，表示是否满足草稿会话Key。
+ */
 const isDraftConversationKey = (key?: string) =>
   Boolean(key?.startsWith(LOCAL_CONVERSATION_KEY_PREFIX))
 
+/**
+ * 判断是否为Ephemeral会话Key。
+ * @param key key。
+ * @returns 返回布尔值，表示是否满足Ephemeral会话Key。
+ */
 const isEphemeralConversationKey = (key?: string) =>
   key === NEW_CONVERSATION_KEY || isDraftConversationKey(key)
 
+/**
+ * 判断是否为Persisted会话Key。
+ * @param key key。
+ * @returns 返回布尔值，表示是否满足Persisted会话Key。
+ */
 const isPersistedConversationKey = (key?: string) =>
   Boolean(key && /^[a-f\d]{24}$/i.test(key))
 
+/**
+ * 根据消息内容生成会话标题。
+ * @param value 用户输入的消息内容。
+ * @returns 返回适合作为会话名称的标题文本。
+ */
 const buildConversationTitle = (value: string) => {
   const nextTitle = value.trim().replace(/\s+/g, " ").slice(0, 50)
 
   return nextTitle || "普通会话"
 }
 
+/**
+ * 生成会话复用提示文案。
+ * @param knowledge 知识库对象。
+ * @returns 返回字符串结果。
+ */
 const buildConversationReuseMessage = (
   knowledge?: TKnowledgeBaseRecord
 ): string => {
@@ -57,6 +93,11 @@ const buildConversationReuseMessage = (
   return "已存在待开始的普通会话，已切换过去"
 }
 
+/**
+ * 生成对话请求错误提示。
+ * @param error 错误对象。
+ * @returns 返回字符串结果。
+ */
 const buildChatRequestErrorMessage = (error: Error): string => {
   if (error.name === "AbortError") {
     return "已停止生成回答"
@@ -79,6 +120,10 @@ const buildChatRequestErrorMessage = (error: Error): string => {
   return errorMessage || "本次问答处理失败，请稍后重试"
 }
 
+/**
+ * 创建用于解析 SSE 对话响应的转换器。
+ * @returns 返回把文本分片转换为问答响应对象的 `TransformStream`。
+ */
 const createChatAskStreamTransform = () => {
   let buffer = ""
 
@@ -145,6 +190,11 @@ const createChatAskStreamTransform = () => {
   })
 }
 
+/**
+ * 根据更新时间计算侧栏分组标题。
+ * @param updatedAt 会话最后更新时间。
+ * @returns 返回今天、昨天或具体日期分组名称。
+ */
 const getConversationGroup = (updatedAt: string) => {
   const updateTime = dayjs(updatedAt)
 
@@ -159,6 +209,11 @@ const getConversationGroup = (updatedAt: string) => {
   return updateTime.format("MMM DD")
 }
 
+/**
+ * 将会话记录转换为侧栏项。
+ * @param session 会话对象。
+ * @returns 返回对话会话Item。
+ */
 const toConversationItem = (session: TChatRecord): TChatConversationItem => {
   return {
     key: session.id,
@@ -169,6 +224,11 @@ const toConversationItem = (session: TChatRecord): TChatConversationItem => {
   }
 }
 
+/**
+ * 按序号和创建时间整理消息顺序。
+ * @param messages 原始消息列表。
+ * @returns 返回排好序的消息列表副本。
+ */
 const sortMessages = (messages: TChatMessageRecord[]) => {
   return [...messages].sort((left, right) => {
     if (left.sequence !== right.sequence) {
@@ -179,6 +239,11 @@ const sortMessages = (messages: TChatMessageRecord[]) => {
   })
 }
 
+/**
+ * 将消息记录转换为默认消息列表。
+ * @param messages 消息列表。
+ * @returns 返回默认消息Info<TChat消息Record>列表。
+ */
 const toDefaultMessages = (
   messages: TChatMessageRecord[]
 ): DefaultMessageInfo<TChatMessageRecord>[] => {
@@ -189,6 +254,10 @@ const toDefaultMessages = (
   }))
 }
 
+/**
+ * 渲染AIChat组件。
+ * @returns 返回组件渲染结果。
+ */
 const AIChat = () => {
   const {
     token: { colorBgContainer, paddingLG },
@@ -406,7 +475,9 @@ const AIChat = () => {
       id: `fallback-${Date.now()}`,
       userId: "",
       sessionId:
-        messageInfo?.message.sessionId ?? activeConversationKeyRef.current ?? "",
+        messageInfo?.message.sessionId ??
+        activeConversationKeyRef.current ??
+        "",
       messageType: "ai",
       content: buildChatRequestErrorMessage(error),
       streamStatus: "error",

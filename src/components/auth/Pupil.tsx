@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 
+/**
+ * 描述瞳孔组件的属性。
+ */
 interface PupilProps {
   size?: number
   maxDistance?: number
@@ -8,6 +11,16 @@ interface PupilProps {
   forceLookY?: number
 }
 
+/**
+ * 渲染Pupil组件。
+ * @param props 组件属性。
+ * @param props.size 大小。
+ * @param props.maxDistance maxDistance。
+ * @param props.pupilColor pupilColor。
+ * @param props.forceLookX forceLookX。
+ * @param props.forceLookY forceLookY。
+ * @returns 返回组件渲染结果。
+ */
 const Pupil = ({
   size = 12,
   maxDistance = 5,

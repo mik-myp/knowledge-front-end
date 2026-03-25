@@ -4,6 +4,14 @@ import { Flex } from "antd"
 import { useState } from "react"
 import Sender from "@ant-design/x/es/sender"
 
+/**
+ * 渲染对话发送器组件。
+ * @param props 组件属性。
+ * @param props.onSubmit onSubmit。
+ * @param props.onAbort onAbort。
+ * @param props.isRequesting isRequesting。
+ * @returns 返回组件渲染结果。
+ */
 const ChatSender = ({ onSubmit, onAbort, isRequesting }: TChatSenderProps) => {
   const { styles } = useStyles()
 

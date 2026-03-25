@@ -10,6 +10,11 @@ import { isValidElement, useEffect, useMemo, useRef } from "react"
 import Bubble from "@ant-design/x/es/bubble"
 import Sources from "@ant-design/x/es/sources"
 
+/**
+ * 提取文本内容。
+ * @param content 内容。
+ * @returns 返回字符串结果。
+ */
 const getTextContent = (content: unknown): string => {
   if (typeof content === "string") {
     return content
@@ -22,6 +27,11 @@ const getTextContent = (content: unknown): string => {
   return String(content ?? "")
 }
 
+/**
+ * 生成来源位置信息文本。
+ * @param source 来源信息。
+ * @returns 返回字符串结果。
+ */
 const getSourceLocationText = (source: TChatMessageSource): string => {
   const locationParts: string[] = []
 
@@ -34,6 +44,11 @@ const getSourceLocationText = (source: TChatMessageSource): string => {
   return locationParts.join(" · ")
 }
 
+/**
+ * 构建引用来源展示项。
+ * @param sources 来源信息列表。
+ * @returns 返回去重后的来源展示数据列表。
+ */
 const buildSourceItems = (sources?: TChatMessageSource[]) => {
   if (!sources?.length) {
     return []
@@ -56,6 +71,15 @@ const buildSourceItems = (sources?: TChatMessageSource[]) => {
   }))
 }
 
+/**
+ * 渲染MarkdownCode组件。
+ * @param props 组件属性。
+ * @param props.children children。
+ * @param props.className className。
+ * @param props.lang lang。
+ * @param props.block block。
+ * @returns 返回组件渲染结果。
+ */
 const MarkdownCode = ({
   children,
   className,
@@ -75,11 +99,13 @@ const MarkdownCode = ({
 
   return (
     <div className="my-4 overflow-hidden rounded-2xl border border-black/10 bg-neutral-50">
-      <div className="border-b border-black/8 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.12em] text-black/45">
+      <div className="border-b border-black/8 px-4 py-2 text-[11px] font-medium tracking-[0.12em] text-black/45 uppercase">
         {normalizedLang || "text"}
       </div>
       <pre className="overflow-x-auto px-4 py-3 text-sm leading-6 text-black/80">
-        <code className={normalizedLang ? `language-${normalizedLang}` : undefined}>
+        <code
+          className={normalizedLang ? `language-${normalizedLang}` : undefined}
+        >
           {code}
         </code>
       </pre>
@@ -87,6 +113,12 @@ const MarkdownCode = ({
   )
 }
 
+/**
+ * 渲染 Markdown 内容和来源列表。
+ * @param content Markdown 文本内容。
+ * @param sources 来源信息列表。
+ * @returns 返回 Markdown 与引用来源组合后的 JSX 内容。
+ */
 const renderMarkdownContent = (
   content: string,
   sources?: TChatMessageSource[]
@@ -116,6 +148,12 @@ const renderMarkdownContent = (
   )
 }
 
+/**
+ * 渲染消息气泡内容。
+ * @param content 消息正文内容。
+ * @param sources 当前消息关联的来源信息列表。
+ * @returns 返回用于气泡展示的 JSX 内容。
+ */
 const renderBubbleContent = (
   content: unknown,
   sources?: TChatMessageSource[]
@@ -127,6 +165,12 @@ const renderBubbleContent = (
   return renderMarkdownContent(String(content ?? ""), sources)
 }
 
+/**
+ * 渲染ThinkingIndicator组件。
+ * @param props 组件属性。
+ * @param props.text text。
+ * @returns 返回组件渲染结果。
+ */
 const ThinkingIndicator = ({ text }: { text?: string }) => {
   return (
     <div className="flex items-center gap-3 px-1 py-1">
@@ -140,10 +184,24 @@ const ThinkingIndicator = ({ text }: { text?: string }) => {
   )
 }
 
+/**
+ * 渲染错误Indicator组件。
+ * @param props 组件属性。
+ * @param props.text text。
+ * @returns 返回组件渲染结果。
+ */
 const ErrorIndicator = ({ text }: { text?: string }) => {
   return <div className="text-sm leading-7 text-red-500">{text}</div>
 }
 
+/**
+ * 渲染对话列表组件。
+ * @param props 组件属性。
+ * @param props.conversationKey 会话标识。
+ * @param props.messages 消息列表。
+ * @param props.messageLoading 消息Loading。
+ * @returns 返回组件渲染结果。
+ */
 const ChatList = ({
   conversationKey,
   messages,

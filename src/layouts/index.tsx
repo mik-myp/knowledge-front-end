@@ -8,6 +8,10 @@ import NavSider from "./components/NavSider"
 
 const { Header, Content } = Layout
 
+/**
+ * 渲染基础Layout组件。
+ * @returns 返回组件渲染结果。
+ */
 const BaseLayout = () => {
   const [collapsed, setCollapsed] = useState(false)
 

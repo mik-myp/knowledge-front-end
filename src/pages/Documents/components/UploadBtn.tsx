@@ -1,14 +1,21 @@
 import { useState } from "react"
+import { ensureObjectId } from "@/contracts/api-contracts"
 import { getAllKnowledges } from "@/services/knowledge"
 import { useRequest } from "ahooks"
 import { documentsUpload } from "@/services/document"
 import { Button, Form, Modal, Select, Spin, Upload } from "antd"
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons"
-import type { UploadChangeParam } from "antd/es/upload"
+import type { UploadChangeParam, UploadFile } from "antd/es/upload"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 
 const { Dragger } = Upload
 
+/**
+ * 渲染上传Btn组件。
+ * @param props 组件属性。
+ * @param props.knowledgeId 知识库 ID。
+ * @returns 返回组件渲染结果。
+ */
 const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -16,10 +23,7 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
 
   const [form] = Form.useForm<{
     knowledgeId: string
-    files: File &
-      {
-        originFileObj: File
-      }[]
+    files: UploadFile<File>[]
   }>()
 
   const { runAsync: documentsUploadAsync, loading: documentsUploadLoading } =
@@ -52,14 +56,16 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
   const handleOk = async () => {
     const validate = await form.validateFields()
     if (validate) {
-      const formData = new FormData()
-      validate.files.forEach((item) => {
-        formData.append("files", item.originFileObj)
-      })
-      formData.append("knowledgeBaseId", validate.knowledgeId)
-
       try {
-        await documentsUploadAsync(formData)
+        await documentsUploadAsync({
+          knowledgeBaseId: ensureObjectId(
+            validate.knowledgeId,
+            "knowledgeBaseId"
+          ),
+          files: validate.files.flatMap((item) =>
+            item.originFileObj ? [item.originFileObj] : []
+          ),
+        })
         setModalOpen(false)
         invalidate()
       } catch {
