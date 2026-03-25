@@ -9,23 +9,7 @@ import { Spin } from "antd"
 import { isValidElement, useEffect, useMemo, useRef } from "react"
 import Bubble from "@ant-design/x/es/bubble"
 import Sources from "@ant-design/x/es/sources"
-
-/**
- * 提取文本内容。
- * @param content 内容。
- * @returns 返回字符串结果。
- */
-const getTextContent = (content: unknown): string => {
-  if (typeof content === "string") {
-    return content
-  }
-
-  if (Array.isArray(content)) {
-    return content.map((item) => getTextContent(item)).join("")
-  }
-
-  return String(content ?? "")
-}
+import CodeHighlighter from "@ant-design/x/es/code-highlighter"
 
 /**
  * 生成来源位置信息文本。
@@ -80,36 +64,18 @@ const buildSourceItems = (sources?: TChatMessageSource[]) => {
  * @param props.block block。
  * @returns 返回组件渲染结果。
  */
-const MarkdownCode = ({
-  children,
-  className,
-  lang,
-  block,
-}: XMarkdownComponentProps) => {
-  const code = getTextContent(children)
-  const normalizedLang = lang?.trim() || className?.replace(/^language-/, "")
+const MarkdownCode = ({ children, className }: XMarkdownComponentProps) => {
+  const lang = className?.match(/language-(\w+)/)?.[1] || ""
 
-  if (!block) {
-    return (
-      <code className="rounded bg-black/5 px-1.5 py-0.5 text-[0.95em]">
-        {code}
-      </code>
-    )
-  }
-
+  if (typeof children !== "string") return null
   return (
-    <div className="my-4 overflow-hidden rounded-2xl border border-black/10 bg-neutral-50">
-      <div className="border-b border-black/8 px-4 py-2 text-[11px] font-medium tracking-[0.12em] text-black/45 uppercase">
-        {normalizedLang || "text"}
-      </div>
-      <pre className="overflow-x-auto px-4 py-3 text-sm leading-6 text-black/80">
-        <code
-          className={normalizedLang ? `language-${normalizedLang}` : undefined}
-        >
-          {code}
-        </code>
-      </pre>
-    </div>
+    <CodeHighlighter
+      lang={lang}
+      prismLightMode
+      classNames={{ code: "border-none" }}
+    >
+      {children}
+    </CodeHighlighter>
   )
 }
 
