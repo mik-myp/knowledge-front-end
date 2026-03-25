@@ -7,7 +7,7 @@ import { AntdAppBridge } from "@/lib/antdApp"
 import zhCN from "antd/locale/zh_CN"
 import dayjs from "dayjs"
 import "dayjs/locale/zh-cn"
-import { XProvider } from "@ant-design/x"
+import XProvider from "@ant-design/x/es/x-provider"
 
 dayjs.locale("zh-cn")
 

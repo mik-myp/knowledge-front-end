@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { getAllKnowledges } from "@/services/knowledge"
 import { useRequest } from "ahooks"
-import { documnetsUpload } from "@/services/document"
+import { documentsUpload } from "@/services/document"
 import { Button, Form, Modal, Select, Spin, Upload } from "antd"
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons"
 import type { UploadChangeParam } from "antd/es/upload"
@@ -22,8 +22,8 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
       }[]
   }>()
 
-  const { runAsync: documnetsUploadAsync, loading: documnetsUploadLoading } =
-    useRequest(documnetsUpload, {
+  const { runAsync: documentsUploadAsync, loading: documentsUploadLoading } =
+    useRequest(documentsUpload, {
       manual: true,
     })
 
@@ -59,7 +59,7 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
       formData.append("knowledgeBaseId", validate.knowledgeId)
 
       try {
-        await documnetsUploadAsync(formData)
+        await documentsUploadAsync(formData)
         setModalOpen(false)
         invalidate()
       } catch {
@@ -89,7 +89,7 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
         onCancel={() => handleModalOpenChange(false)}
         title="上传文件"
         onOk={handleOk}
-        confirmLoading={documnetsUploadLoading}
+        confirmLoading={documentsUploadLoading}
         destroyOnHidden
         afterClose={handleAfterClose}
         width={700}

@@ -1,0 +1,125 @@
+import { LeftOutlined, RightOutlined } from "@ant-design/icons"
+import { useRequest, useSize } from "ahooks"
+import { useEffect, useRef, useState } from "react"
+import { Document, Page, pdfjs } from "react-pdf"
+import pdfWorker from "react-pdf/dist/pdf.worker.entry.js?url"
+import "react-pdf/dist/Page/AnnotationLayer.css"
+import "react-pdf/dist/Page/TextLayer.css"
+import { Button, Empty, Flex, Spin, Typography } from "antd"
+import { fetchDocumentFile } from "@/services/document"
+
+pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
+
+const { Text } = Typography
+
+type PdfPreviewProps = {
+  documentId: string
+}
+
+const PdfPreview = ({ documentId }: PdfPreviewProps) => {
+  const previewRef = useRef<HTMLDivElement>(null)
+  const previewSize = useSize(previewRef)
+  const [previewUrl, setPreviewUrl] = useState<string>()
+  const [pageCount, setPageCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [loadFailed, setLoadFailed] = useState(false)
+
+  const { runAsync: fetchDocumentFileAsync, loading } = useRequest(fetchDocumentFile, {
+    manual: true,
+  })
+
+  useEffect(() => {
+    let cancelled = false
+    let nextPreviewUrl: string | undefined
+
+    void (async () => {
+      try {
+        const blob = await fetchDocumentFileAsync({ id: documentId })
+
+        if (cancelled) {
+          return
+        }
+
+        nextPreviewUrl = URL.createObjectURL(blob)
+        setPreviewUrl(nextPreviewUrl)
+      } catch {
+        if (!cancelled) {
+          setLoadFailed(true)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+
+      if (nextPreviewUrl) {
+        URL.revokeObjectURL(nextPreviewUrl)
+      }
+    }
+  }, [documentId, fetchDocumentFileAsync])
+
+  if (loading && !previewUrl) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spin size="large" />
+      </div>
+    )
+  }
+
+  if (loadFailed) {
+    return <Empty description="PDF 加载失败" />
+  }
+
+  if (!previewUrl) {
+    return <Empty description="PDF 暂无可预览内容" />
+  }
+
+  const pageWidth = Math.max((previewSize?.width ?? 960) - 48, 320)
+
+  return (
+    <div className="flex h-full flex-col gap-4">
+      <Flex justify="space-between" align="center" wrap gap={12}>
+        <Flex gap={8} align="center">
+          <Button
+            icon={<LeftOutlined />}
+            disabled={currentPage <= 1}
+            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+          >
+            上一页
+          </Button>
+          <Button
+            icon={<RightOutlined />}
+            iconPosition="end"
+            disabled={pageCount > 0 && currentPage >= pageCount}
+            onClick={() =>
+              setCurrentPage((page) =>
+                pageCount > 0 ? Math.min(page + 1, pageCount) : page + 1
+              )
+            }
+          >
+            下一页
+          </Button>
+        </Flex>
+        <Text type="secondary">
+          第 {currentPage} 页{pageCount > 0 ? ` / 共 ${pageCount} 页` : ""}
+        </Text>
+      </Flex>
+
+      <div ref={previewRef} className="scrollbar-thin flex-1 overflow-auto rounded-xl bg-black/3 p-6">
+        <Document
+          key={previewUrl}
+          file={previewUrl}
+          loading="PDF 加载中..."
+          onLoadSuccess={({ numPages }) => {
+            setPageCount(numPages)
+            setCurrentPage(1)
+          }}
+        >
+          <Page pageNumber={currentPage} width={pageWidth} />
+        </Document>
+      </div>
+    </div>
+  )
+}
+
+export default PdfPreview

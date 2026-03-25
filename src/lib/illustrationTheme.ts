@@ -61,7 +61,6 @@ const useIllustrationTheme = () => {
   const { styles } = useStyles()
 
   return useMemo<XProviderProps>(
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     () => ({
       theme: {
         algorithm: theme.defaultAlgorithm,
@@ -122,13 +121,11 @@ const useIllustrationTheme = () => {
           root: styles.buttonRoot,
         },
       },
-
       modal: {
         classNames: {
           container: styles.modalContainer,
         },
       },
-
       avatar: {
         className: styles.illustrationBorder,
       },
@@ -197,17 +194,16 @@ const useIllustrationTheme = () => {
       conversations: {
         classNames: {
           creation: styles.illustrationBox,
-          
         },
       },
       sender: {
         classNames: {
           root: styles.illustrationBox,
-          input: styles.illustrationNoneBox, // 暂时无效果，只能在组件的classnames上设置
+          input: styles.illustrationNoneBox,
         },
       },
     }),
-    []
+    [styles]
   )
 }
 

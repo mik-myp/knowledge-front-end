@@ -17,10 +17,13 @@ const Pupil = ({
 }: PupilProps) => {
   const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 })
   const pupilRef = useRef<HTMLDivElement>(null)
+  const currentPupilPosition =
+    forceLookX !== undefined && forceLookY !== undefined
+      ? { x: forceLookX, y: forceLookY }
+      : pupilPosition
 
   useEffect(() => {
     if (forceLookX !== undefined && forceLookY !== undefined) {
-      setPupilPosition({ x: forceLookX, y: forceLookY })
       return
     }
 
@@ -74,7 +77,7 @@ const Pupil = ({
         width: `${size}px`,
         height: `${size}px`,
         backgroundColor: pupilColor,
-        transform: `translate(${pupilPosition.x}px, ${pupilPosition.y}px)`,
+        transform: `translate(${currentPupilPosition.x}px, ${currentPupilPosition.y}px)`,
         transition: "transform 0.1s ease-out",
       }}
     />

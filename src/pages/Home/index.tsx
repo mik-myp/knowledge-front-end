@@ -4,7 +4,6 @@ import dayjs from "dayjs"
 import {
   ArrowRightOutlined,
   BookOutlined,
-  ClockCircleOutlined,
   DatabaseOutlined,
   FileTextOutlined,
   ReloadOutlined,

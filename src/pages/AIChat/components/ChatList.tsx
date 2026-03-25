@@ -2,12 +2,13 @@ import { XMarkdown } from "@ant-design/x-markdown"
 import "@ant-design/x-markdown/dist/x-markdown.css"
 import type { TChatListProps } from "@/types/ai-chat"
 import type { TChatMessageSource } from "@/types/chat"
-import { Bubble, CodeHighlighter, Sources } from "@ant-design/x"
 import type { BubbleListProps } from "@ant-design/x/es/bubble"
 import type { ComponentProps as XMarkdownComponentProps } from "@ant-design/x-markdown"
 import type { GetRef } from "antd"
 import { Spin } from "antd"
 import { isValidElement, useEffect, useMemo, useRef } from "react"
+import Bubble from "@ant-design/x/es/bubble"
+import Sources from "@ant-design/x/es/sources"
 
 const getTextContent = (content: unknown): string => {
   if (typeof content === "string") {
@@ -73,16 +74,16 @@ const MarkdownCode = ({
   }
 
   return (
-    <CodeHighlighter
-      lang={normalizedLang}
-      className="my-4 overflow-hidden rounded-2xl"
-      prismLightMode
-      classNames={{
-        code: "border-none",
-      }}
-    >
-      {code}
-    </CodeHighlighter>
+    <div className="my-4 overflow-hidden rounded-2xl border border-black/10 bg-neutral-50">
+      <div className="border-b border-black/8 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.12em] text-black/45">
+        {normalizedLang || "text"}
+      </div>
+      <pre className="overflow-x-auto px-4 py-3 text-sm leading-6 text-black/80">
+        <code className={normalizedLang ? `language-${normalizedLang}` : undefined}>
+          {code}
+        </code>
+      </pre>
+    </div>
   )
 }
 

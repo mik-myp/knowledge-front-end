@@ -1,47 +1,87 @@
-import BaseLayout from "@/layouts"
-import Home from "@/pages/Home"
-import Documents from "@/pages/Documents"
-import Login from "@/pages/Login"
-import Register from "@/pages/Register"
 import { createBrowserRouter } from "react-router"
-import Knowledges from "@/pages/Knowledges"
-import DocumentDetail from "@/pages/Documents/Detail"
-import AIChat from "@/pages/AIChat"
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    Component: Login,
+    lazy: async () => {
+      const module = await import("@/pages/Login")
+
+      return {
+        Component: module.default,
+      }
+    },
   },
   {
     path: "/register",
-    Component: Register,
+    lazy: async () => {
+      const module = await import("@/pages/Register")
+
+      return {
+        Component: module.default,
+      }
+    },
   },
   {
     path: "/",
-    Component: BaseLayout,
+    lazy: async () => {
+      const module = await import("@/layouts")
+
+      return {
+        Component: module.default,
+      }
+    },
     children: [
       {
         index: true,
-        Component: Home,
+        lazy: async () => {
+          const module = await import("@/pages/Home")
+
+          return {
+            Component: module.default,
+          }
+        },
       },
       {
         path: "documents",
-        Component: Documents,
+        lazy: async () => {
+          const module = await import("@/pages/Documents")
+
+          return {
+            Component: module.default,
+          }
+        },
       },
       {
         path: "knowledges/:id",
-        Component: Knowledges,
+        lazy: async () => {
+          const module = await import("@/pages/Knowledges")
+
+          return {
+            Component: module.default,
+          }
+        },
       },
       {
         path: "documents/:id",
-        Component: DocumentDetail,
+        lazy: async () => {
+          const module = await import("@/pages/Documents/Detail")
+
+          return {
+            Component: module.default,
+          }
+        },
       },
     ],
   },
   {
     path: "/ai",
-    Component: AIChat,
+    lazy: async () => {
+      const module = await import("@/pages/AIChat")
+
+      return {
+        Component: module.default,
+      }
+    },
   },
 ])
 

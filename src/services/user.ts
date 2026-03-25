@@ -1,10 +1,6 @@
 import request from "@/lib/request"
 import type { TokenPairResult, TUserProfile } from "@/types/user"
 
-export async function SayHelloWorld() {
-  return await request<string>("")
-}
-
 export async function userRegister(data: {
   username: string
   email: string

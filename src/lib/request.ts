@@ -31,10 +31,27 @@ type AuthTokenPair = Pick<TokenPairResult, "accessToken" | "refreshToken">
 
 let refreshPromise: Promise<AuthTokenPair> | null = null
 
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "")
+
 export const getAccessToken = () => localStorage.getItem("accessToken")
 export const getRefreshToken = () => localStorage.getItem("refreshToken")
-export const getRequestBaseURL = () =>
-  import.meta.env.DEV ? "http://localhost:3000" : "http://120.26.21.10"
+export const getRequestBaseURL = () => {
+  const configuredBaseURL = import.meta.env.VITE_API_BASE_URL?.trim()
+
+  if (configuredBaseURL) {
+    return trimTrailingSlash(configuredBaseURL)
+  }
+
+  if (import.meta.env.DEV) {
+    return "http://localhost:3000"
+  }
+
+  if (typeof window !== "undefined" && window.location.origin) {
+    return trimTrailingSlash(window.location.origin)
+  }
+
+  return ""
+}
 
 const clearTokens = () => {
   localStorage.removeItem("accessToken")
@@ -59,6 +76,7 @@ const createResponseError = (code?: number, message?: string) => {
     (typeof code === "number" ? statusMessageMap[code] : undefined) ||
     message?.trim() ||
     "请求失败"
+
   notification.error({
     title: "请求失败",
     description: errorMessage,
@@ -160,6 +178,7 @@ service.interceptors.request.use(
       title: "请求发送失败",
       description: error.message,
     })
+
     return Promise.reject(error)
   }
 )
@@ -272,6 +291,7 @@ export const requestBlob = async (
 
     if (contentType.includes("application/json")) {
       const payload = (await response.json()) as Partial<ApiResponse<unknown>>
+
       throw createResponseError(
         payload.code ?? response.status,
         payload.message ?? response.statusText

@@ -25,7 +25,7 @@ const buildDownloadFileName = (fileName: string, extension?: string) => {
     : `${trimmedFileName}.${trimmedExtension}`
 }
 
-export async function documnetsUpload(data: FormData) {
+export async function documentsUpload(data: FormData) {
   return await request<TDocumentRecord[]>("/documents/upload", {
     method: "POST",
     data,

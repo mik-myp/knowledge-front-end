@@ -95,39 +95,52 @@ const AuthPageShell = ({
 
   useEffect(() => {
     if (!isTyping) {
-      setIsLookingAtEachOther(false)
-      return
+      const frameId = requestAnimationFrame(() => {
+        setIsLookingAtEachOther(false)
+      })
+
+      return () => cancelAnimationFrame(frameId)
     }
 
-    setIsLookingAtEachOther(true)
+    const startTimer = setTimeout(() => {
+      setIsLookingAtEachOther(true)
+    }, 0)
     const timer = setTimeout(() => {
       setIsLookingAtEachOther(false)
     }, 800)
 
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(startTimer)
+      clearTimeout(timer)
+    }
   }, [isTyping])
 
   useEffect(() => {
     if (!(password.length > 0 && showPassword)) {
-      setIsPurplePeeking(false)
-      return
+      const frameId = requestAnimationFrame(() => {
+        setIsPurplePeeking(false)
+      })
+
+      return () => cancelAnimationFrame(frameId)
     }
 
-    const peekTimeout = setTimeout(
-      () => {
-        setIsPurplePeeking(true)
+    const peekDelay = Math.random() * 3000 + 2000
+    let resetTimeout: ReturnType<typeof setTimeout> | undefined
 
-        const resetTimeout = setTimeout(() => {
-          setIsPurplePeeking(false)
-        }, 800)
+    const peekTimeout = setTimeout(() => {
+      setIsPurplePeeking(true)
+      resetTimeout = setTimeout(() => {
+        setIsPurplePeeking(false)
+      }, 800)
+    }, peekDelay)
 
-        return () => clearTimeout(resetTimeout)
-      },
-      Math.random() * 3000 + 2000
-    )
-
-    return () => clearTimeout(peekTimeout)
-  }, [password, showPassword, isPurplePeeking])
+    return () => {
+      clearTimeout(peekTimeout)
+      if (resetTimeout) {
+        clearTimeout(resetTimeout)
+      }
+    }
+  }, [password, showPassword])
 
   const calculatePosition = (
     element: HTMLDivElement | null,

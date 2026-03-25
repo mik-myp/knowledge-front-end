@@ -23,10 +23,13 @@ const EyeBall = ({
 }: EyeBallProps) => {
   const [pupilPosition, setPupilPosition] = useState({ x: 0, y: 0 })
   const eyeRef = useRef<HTMLDivElement>(null)
+  const currentPupilPosition =
+    forceLookX !== undefined && forceLookY !== undefined
+      ? { x: forceLookX, y: forceLookY }
+      : pupilPosition
 
   useEffect(() => {
     if (forceLookX !== undefined && forceLookY !== undefined) {
-      setPupilPosition({ x: forceLookX, y: forceLookY })
       return
     }
 
@@ -90,7 +93,7 @@ const EyeBall = ({
             width: `${pupilSize}px`,
             height: `${pupilSize}px`,
             backgroundColor: pupilColor,
-            transform: `translate(${pupilPosition.x}px, ${pupilPosition.y}px)`,
+            transform: `translate(${currentPupilPosition.x}px, ${currentPupilPosition.y}px)`,
             transition: "transform 0.1s ease-out",
           }}
         />
