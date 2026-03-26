@@ -22,48 +22,6 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    chunkSizeWarningLimit: 650,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          const normalizedId = id.replace(/\\/g, "/")
-
-          if (!normalizedId.includes("node_modules")) {
-            return
-          }
-
-          if (normalizedId.includes("@ant-design/x-markdown")) {
-            return "x-markdown-vendor"
-          }
-
-          if (
-            normalizedId.includes("marked") ||
-            normalizedId.includes("dompurify") ||
-            normalizedId.includes("html-react-parser") ||
-            normalizedId.includes("katex")
-          ) {
-            return "markdown-parser-vendor"
-          }
-
-          if (
-            normalizedId.includes("react-pdf") ||
-            normalizedId.includes("pdfjs-dist")
-          ) {
-            return "pdf-preview-vendor"
-          }
-
-          if (normalizedId.includes("jszip")) {
-            return "jszip-vendor"
-          }
-
-          if (normalizedId.includes("mammoth")) {
-            return "docx-preview-vendor"
-          }
-        },
-      },
-    },
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

@@ -1,121 +1,13 @@
-import { XMarkdown } from "@ant-design/x-markdown"
-import "@ant-design/x-markdown/dist/x-markdown.css"
 import type { TChatListProps } from "@/types/ai-chat"
 import type { TChatMessageSource } from "@/types/chat"
-import type { ComponentProps as XMarkdownComponentProps } from "@ant-design/x-markdown"
-import { Bubble, CodeHighlighter, Sources, type BubbleListProps } from "@ant-design/x"
+import { Bubble, type BubbleListProps } from "@ant-design/x"
 import type { GetRef } from "antd"
 import { Spin } from "antd"
 import { isValidElement, useEffect, useMemo, useRef } from "react"
+import ChatMarkdownContent from "./ChatMarkdownContent"
 
 /**
- * 生成来源位置信息文本。
- * @param source 来源信息。
- * @returns 返回字符串结果。
- */
-const getSourceLocationText = (source: TChatMessageSource): string => {
-  const locationParts: string[] = []
-
-  if (typeof source.page === "number") {
-    locationParts.push(`P${source.page}`)
-  }
-
-  locationParts.push(`片段 ${source.chunkSequence + 1}`)
-
-  return locationParts.join(" · ")
-}
-
-/**
- * 构建引用来源展示项。
- * @param sources 来源信息列表。
- * @returns 返回去重后的来源展示数据列表。
- */
-const buildSourceItems = (sources?: TChatMessageSource[]) => {
-  if (!sources?.length) {
-    return []
-  }
-
-  const uniqueSourceMap = new Map<string, TChatMessageSource>()
-
-  sources.forEach((source) => {
-    const key = `${source.documentId}-${source.chunkSequence}`
-
-    if (!uniqueSourceMap.has(key)) {
-      uniqueSourceMap.set(key, source)
-    }
-  })
-
-  return [...uniqueSourceMap.values()].map((source) => ({
-    key: `${source.documentId}-${source.chunkSequence}`,
-    title: `${source.documentName} · ${getSourceLocationText(source)}`,
-    url: `/documents/${source.documentId}`,
-  }))
-}
-
-/**
- * 渲染MarkdownCode组件。
- * @param props 组件属性。
- * @param props.children children。
- * @param props.className className。
- * @param props.lang lang。
- * @param props.block block。
- * @returns 返回组件渲染结果。
- */
-const MarkdownCode = ({ children, className }: XMarkdownComponentProps) => {
-  const lang = className?.match(/language-(\w+)/)?.[1] || ""
-
-  if (typeof children !== "string") return null
-  return (
-    <CodeHighlighter
-      lang={lang}
-      prismLightMode
-      classNames={{ code: "border-none" }}
-    >
-      {children}
-    </CodeHighlighter>
-  )
-}
-
-/**
- * 渲染 Markdown 内容和来源列表。
- * @param content Markdown 文本内容。
- * @param sources 来源信息列表。
- * @returns 返回 Markdown 与引用来源组合后的 JSX 内容。
- */
-const renderMarkdownContent = (
-  content: string,
-  sources?: TChatMessageSource[]
-) => {
-  const sourceItems = buildSourceItems(sources)
-
-  return (
-    <div className="flex flex-col gap-3">
-      <XMarkdown
-        content={content}
-        escapeRawHtml
-        openLinksInNewTab
-        className="x-markdown-light text-sm leading-7"
-        components={{
-          code: MarkdownCode,
-        }}
-      />
-      {sourceItems.length > 0 ? (
-        <Sources
-          title={`来源 ${sourceItems.length}`}
-          items={sourceItems}
-          defaultExpanded={false}
-          className="max-w-full"
-        />
-      ) : null}
-    </div>
-  )
-}
-
-/**
- * 渲染消息气泡内容。
- * @param content 消息正文内容。
- * @param sources 当前消息关联的来源信息列表。
- * @returns 返回用于气泡展示的 JSX 内容。
+ * 根据消息内容类型渲染气泡内容，字符串消息走 Markdown 展示。
  */
 const renderBubbleContent = (
   content: unknown,
@@ -125,14 +17,13 @@ const renderBubbleContent = (
     return content
   }
 
-  return renderMarkdownContent(String(content ?? ""), sources)
+  const text = String(content ?? "")
+
+  return <ChatMarkdownContent content={text} sources={sources} />
 }
 
 /**
- * 渲染ThinkingIndicator组件。
- * @param props 组件属性。
- * @param props.text text。
- * @returns 返回组件渲染结果。
+ * 显示 AI 正在流式生成内容时的状态提示。
  */
 const ThinkingIndicator = ({ text }: { text?: string }) => {
   return (
@@ -148,22 +39,14 @@ const ThinkingIndicator = ({ text }: { text?: string }) => {
 }
 
 /**
- * 渲染错误Indicator组件。
- * @param props 组件属性。
- * @param props.text text。
- * @returns 返回组件渲染结果。
+ * 显示 AI 回复失败时的错误信息。
  */
 const ErrorIndicator = ({ text }: { text?: string }) => {
   return <div className="text-sm leading-7 text-red-500">{text}</div>
 }
 
 /**
- * 渲染对话列表组件。
- * @param props 组件属性。
- * @param props.conversationKey 会话标识。
- * @param props.messages 消息列表。
- * @param props.messageLoading 消息Loading。
- * @returns 返回组件渲染结果。
+ * 渲染对话消息列表，并在消息变化后自动滚动到底部。
  */
 const ChatList = ({
   conversationKey,
