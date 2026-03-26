@@ -5,13 +5,7 @@ import { LockOutlined, MailOutlined } from "@ant-design/icons"
 import { Button, Form, Input } from "antd"
 
 import AuthPageShell from "@/components/auth/AuthPageShell"
-import { API_CONSTRAINTS } from "@/contracts/api-contracts"
 import { persistAuthSession } from "@/lib/auth"
-import {
-  FORM_LIMITS,
-  createEmailRule,
-  createRequiredStringRule,
-} from "@/lib/formRules"
 import { userLogin } from "@/services/user"
 
 /**
@@ -56,14 +50,25 @@ const Login = () => {
         <Form.Item
           name="email"
           label="邮箱"
-          rules={[createEmailRule("请输入邮箱")]}
+          rules={[
+            {
+              required: true,
+              type: "email",
+              message: "请输入合法邮箱",
+            },
+            {
+              type: "string",
+              max: 100,
+              message: "邮箱长度不能超过 100 个字符",
+            },
+          ]}
         >
           <Input
             size="large"
             prefix={<MailOutlined />}
             placeholder="请输入邮箱"
             autoComplete="email"
-            maxLength={FORM_LIMITS.email}
+            maxLength={100}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
           />
@@ -73,12 +78,13 @@ const Login = () => {
           name="password"
           label="密码"
           rules={[
-            createRequiredStringRule({
-              fieldName: "password",
-              minLength: API_CONSTRAINTS.user.passwordMinLength,
-              maxLength: API_CONSTRAINTS.user.passwordMaxLength,
-              requiredMessage: "请输入密码",
-            }),
+            {
+              required: true,
+              type: "string",
+              min: 8,
+              max: 32,
+              message: "请输入密码，且长度必须在 8 到 32 个字符之间",
+            },
           ]}
         >
           <Input.Password
@@ -86,7 +92,7 @@ const Login = () => {
             prefix={<LockOutlined />}
             placeholder="请输入密码"
             autoComplete="current-password"
-            maxLength={FORM_LIMITS.password}
+            maxLength={32}
             onFocus={() => setIsTyping(true)}
             onBlur={() => setIsTyping(false)}
             visibilityToggle={{

@@ -1,14 +1,15 @@
 import { useState } from "react"
-import { ensureObjectId } from "@/contracts/api-contracts"
 import { getAllKnowledges } from "@/services/knowledge"
 import { useRequest } from "ahooks"
 import { documentsUpload } from "@/services/document"
-import { Button, Form, Modal, Select, Spin, Upload } from "antd"
+import { App, Button, Form, Modal, Select, Spin, Upload } from "antd"
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons"
 import type { UploadChangeParam, UploadFile } from "antd/es/upload"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 
 const { Dragger } = Upload
+const uploadAccept = ".md,.pdf,.txt,.docx"
+const maxUploadFileSize = 5 * 1024 * 1024
 
 /**
  * 渲染上传Btn组件。
@@ -18,6 +19,7 @@ const { Dragger } = Upload
  */
 const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
   const [modalOpen, setModalOpen] = useState(false)
+  const { message } = App.useApp()
 
   const { invalidate } = useDocumentsVersion()
 
@@ -58,10 +60,7 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
     if (validate) {
       try {
         await documentsUploadAsync({
-          knowledgeBaseId: ensureObjectId(
-            validate.knowledgeId,
-            "knowledgeBaseId"
-          ),
+          knowledgeBaseId: validate.knowledgeId,
           files: validate.files.flatMap((item) =>
             item.originFileObj ? [item.originFileObj] : []
           ),
@@ -79,6 +78,27 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
       return e
     }
     return e?.fileList
+  }
+
+  const beforeUpload = (file: File) => {
+    const lowerCaseName = file.name.toLowerCase()
+    const isSupportedFile =
+      lowerCaseName.endsWith(".md") ||
+      lowerCaseName.endsWith(".pdf") ||
+      lowerCaseName.endsWith(".txt") ||
+      lowerCaseName.endsWith(".docx")
+
+    if (!isSupportedFile) {
+      message.error("仅支持上传 md、pdf、txt、docx 文件")
+      return Upload.LIST_IGNORE
+    }
+
+    if (file.size > maxUploadFileSize) {
+      message.error("单个文件大小不能超过 5MB")
+      return Upload.LIST_IGNORE
+    }
+
+    return false
   }
 
   return (
@@ -157,12 +177,19 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
             valuePropName="fileList"
             getValueFromEvent={normFile}
           >
-            <Dragger name="files" beforeUpload={() => false} multiple>
+            <Dragger
+              name="files"
+              accept={uploadAccept}
+              beforeUpload={beforeUpload}
+              multiple
+            >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
               <p className="ant-upload-text">单击或拖动文件到此区域进行上传</p>
-              <p className="ant-upload-hint">支持单次或批量上传</p>
+              <p className="ant-upload-hint">
+                仅支持 md、pdf、txt、docx，单个文件不超过 5MB
+              </p>
             </Dragger>
           </Form.Item>
         </Form>

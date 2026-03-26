@@ -4,6 +4,47 @@
 export type TDocumentSourceType = "upload" | "editor"
 
 /**
+ * 定义文档列表查询参数结构。
+ */
+export type TListDocumentsQuery = {
+  page?: number
+  pageSize?: number
+  knowledgeBaseId?: string
+  keyword?: string
+}
+
+/**
+ * 定义文档上传参数结构。
+ */
+export type TDocumentsUploadInput<FileValue = File> = {
+  knowledgeBaseId: string
+  files: FileValue[]
+}
+
+/**
+ * 定义按 ID 查询文档的参数结构。
+ */
+export type TDocumentIdInput = {
+  id: string
+}
+
+/**
+ * 定义批量删除文档参数结构。
+ */
+export type TRemoveDocumentsInput = {
+  documentIds: string[]
+}
+
+/**
+ * 定义下载原文件参数结构。
+ */
+export type TDownloadDocumentOriginalFileInput = {
+  id: string
+  fileName: string
+  extension?: string
+}
+
+/**
  * 定义文档的数据记录结构。
  */
 export type TDocumentRecord = {

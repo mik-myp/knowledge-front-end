@@ -1,18 +1,15 @@
 import { getRequestBaseURL, requestBlob } from "@/lib/request"
 import { downloadBlob } from "@/lib/utils"
 import request from "@/lib/request"
-import {
-  ensureObjectId,
-  normalizeListDocumentsQuery,
-  normalizeRemoveDocumentsInput,
-  normalizeUploadDocumentsInput,
-  type ListDocumentsQuery,
-  type UploadDocumentsInput,
-} from "@/contracts/api-contracts"
 import type {
+  TDocumentIdInput,
   TDocumentListResult,
   TDocumentRecord,
+  TDocumentsUploadInput,
+  TDownloadDocumentOriginalFileInput,
+  TListDocumentsQuery,
   TRemoveDocumentsResult,
+  TRemoveDocumentsInput,
 } from "@/types/documents"
 
 /**
@@ -32,16 +29,15 @@ const getDocumentDownloadUrl = (id: string) =>
  * @returns 返回补齐扩展名后的文件名。
  */
 const buildDownloadFileName = (fileName: string, extension?: string) => {
-  const trimmedFileName = fileName.trim()
-  const trimmedExtension = extension?.trim().toLowerCase()
+  const normalizedExtension = extension?.toLowerCase()
 
-  if (!trimmedExtension) {
-    return trimmedFileName
+  if (!normalizedExtension) {
+    return fileName
   }
 
-  return trimmedFileName.toLowerCase().endsWith(`.${trimmedExtension}`)
-    ? trimmedFileName
-    : `${trimmedFileName}.${trimmedExtension}`
+  return fileName.toLowerCase().endsWith(`.${normalizedExtension}`)
+    ? fileName
+    : `${fileName}.${normalizedExtension}`
 }
 
 /**
@@ -49,14 +45,13 @@ const buildDownloadFileName = (fileName: string, extension?: string) => {
  * @param data 上传参数，包含所属知识库 ID 和文件列表。
  * @returns 返回上传成功后的文档记录列表。
  */
-export async function documentsUpload(data: UploadDocumentsInput<File>) {
-  const normalizedPayload = normalizeUploadDocumentsInput(data)
+export async function documentsUpload(data: TDocumentsUploadInput<File>) {
   const formData = new FormData()
 
-  normalizedPayload.files.forEach((file) => {
+  data.files.forEach((file) => {
     formData.append("files", file)
   })
-  formData.append("knowledgeBaseId", normalizedPayload.knowledgeBaseId)
+  formData.append("knowledgeBaseId", data.knowledgeBaseId)
 
   return await request<TDocumentRecord[]>("/documents/upload", {
     method: "POST",
@@ -69,10 +64,10 @@ export async function documentsUpload(data: UploadDocumentsInput<File>) {
  * @param data 查询参数，包含分页、知识库过滤和关键字筛选条件。
  * @returns 返回文档列表和总数。
  */
-export async function findAllDocuments(data: ListDocumentsQuery) {
+export async function findAllDocuments(data: TListDocumentsQuery) {
   return await request<TDocumentListResult>("/documents", {
     method: "GET",
-    params: normalizeListDocumentsQuery(data),
+    params: data,
   })
 }
 
@@ -82,10 +77,8 @@ export async function findAllDocuments(data: ListDocumentsQuery) {
  * @param data.id 需要查询的文档 ID。
  * @returns 返回对应的文档详情。
  */
-export async function findDocumentById(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TDocumentRecord>(`/documents/${id}`, {
+export async function findDocumentById(data: TDocumentIdInput) {
+  return await request<TDocumentRecord>(`/documents/${data.id}`, {
     method: "GET",
   })
 }
@@ -96,10 +89,8 @@ export async function findDocumentById(data: { id: string }) {
  * @param data.id 需要删除的文档 ID。
  * @returns 返回被删除的文档记录。
  */
-export async function deleteDocumentById(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TDocumentRecord>(`/documents/${id}`, {
+export async function deleteDocumentById(data: TDocumentIdInput) {
+  return await request<TDocumentRecord>(`/documents/${data.id}`, {
     method: "DELETE",
   })
 }
@@ -110,10 +101,10 @@ export async function deleteDocumentById(data: { id: string }) {
  * @param data.documentIds 需要删除的文档 ID 列表。
  * @returns 返回批量删除结果，包含成功数量和文档 ID 列表。
  */
-export async function deleteAllDocumentById(data: { documentIds: string[] }) {
+export async function deleteAllDocumentById(data: TRemoveDocumentsInput) {
   return await request<TRemoveDocumentsResult>(`/documents/all`, {
     method: "DELETE",
-    data: normalizeRemoveDocumentsInput(data),
+    data,
   })
 }
 
@@ -123,10 +114,8 @@ export async function deleteAllDocumentById(data: { documentIds: string[] }) {
  * @param data.id 需要下载的文档 ID。
  * @returns 返回文档文件对应的 Blob 数据。
  */
-export async function fetchDocumentFile(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await requestBlob(getDocumentDownloadUrl(id), {
+export async function fetchDocumentFile(data: TDocumentIdInput) {
+  return await requestBlob(getDocumentDownloadUrl(data.id), {
     method: "GET",
   })
 }
@@ -139,11 +128,9 @@ export async function fetchDocumentFile(data: { id: string }) {
  * @param data.extension 文档扩展名，可选。
  * @returns 下载触发后不返回额外数据。
  */
-export async function downloadDocumentOriginalFile(data: {
-  id: string
-  fileName: string
-  extension?: string
-}) {
+export async function downloadDocumentOriginalFile(
+  data: TDownloadDocumentOriginalFileInput
+) {
   const blob = await fetchDocumentFile({ id: data.id })
   downloadBlob(blob, buildDownloadFileName(data.fileName, data.extension))
 }

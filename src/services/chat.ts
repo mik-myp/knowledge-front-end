@@ -1,16 +1,11 @@
 import request from "@/lib/request"
-import {
-  ensureObjectId,
-  normalizeAskChatInput,
-  normalizeCreateChatSessionInput,
-  normalizeFindChatMessagesQuery,
-  normalizeUpdateChatSessionInput,
-  type CreateChatSessionInput,
-} from "@/contracts/api-contracts"
 import type {
-  TChatAskRequest,
+  TChatSessionIdInput,
+  TCreateChatSessionInput,
+  TFindChatMessagesQuery,
   TChatMessageRecord,
   TChatRecord,
+  TUpdateChatSessionInput,
 } from "@/types/chat"
 
 /**
@@ -28,10 +23,10 @@ export async function findAllSession() {
  * @param data 会话创建参数，可包含知识库 ID 和初始标题。
  * @returns 返回新建后的会话记录。
  */
-export async function createSession(data: CreateChatSessionInput) {
+export async function createSession(data: TCreateChatSessionInput) {
   return await request<TChatRecord>("/chat/sessions", {
     method: "POST",
-    data: normalizeCreateChatSessionInput(data),
+    data,
   })
 }
 
@@ -42,14 +37,12 @@ export async function createSession(data: CreateChatSessionInput) {
  * @param data.title 会话的新标题。
  * @returns 返回更新后的会话记录。
  */
-export async function updateSession(data: { id: string; title: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TChatRecord>(`/chat/sessions/${id}`, {
+export async function updateSession(data: TUpdateChatSessionInput) {
+  return await request<TChatRecord>(`/chat/sessions/${data.id}`, {
     method: "PATCH",
-    data: normalizeUpdateChatSessionInput({
+    data: {
       title: data.title,
-    }),
+    },
   })
 }
 
@@ -59,10 +52,8 @@ export async function updateSession(data: { id: string; title: string }) {
  * @param data.id 需要删除的会话 ID。
  * @returns 返回被删除的会话记录。
  */
-export async function removeSession(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TChatRecord>(`/chat/sessions/${id}`, {
+export async function removeSession(data: TChatSessionIdInput) {
+  return await request<TChatRecord>(`/chat/sessions/${data.id}`, {
     method: "DELETE",
   })
 }
@@ -73,23 +64,9 @@ export async function removeSession(data: { id: string }) {
  * @param data.sessionId 需要查询的会话 ID。
  * @returns 返回该会话下的消息列表。
  */
-export async function getHistoryMessages(data: { sessionId: string }) {
+export async function getHistoryMessages(data: TFindChatMessagesQuery) {
   return await request<TChatMessageRecord[]>("/chat/messages", {
     method: "GET",
-    params: normalizeFindChatMessagesQuery(data),
-  })
-}
-
-/**
- * 发起问答请求。
- * @param data 问答请求参数，包含消息列表、会话信息和检索配置。
- * @param signal 可选的取消信号，用于中断正在进行的请求。
- * @returns 返回问答接口的原始响应数据。
- */
-export async function askChat(data: TChatAskRequest, signal?: AbortSignal) {
-  return await request<unknown>("/chat/ask", {
-    method: "POST",
-    data: normalizeAskChatInput(data),
-    signal,
+    params: data,
   })
 }

@@ -25,13 +25,11 @@ const ChatSender = ({ onSubmit, onAbort, isRequesting }: TChatSenderProps) => {
         value={inputValue}
         onChange={setInputValue}
         onSubmit={() => {
-          const nextValue = inputValue.trim()
-
-          if (!nextValue) {
+          if (!inputValue) {
             return
           }
 
-          onSubmit(nextValue)
+          onSubmit(inputValue)
           setInputValue("")
         }}
         onCancel={onAbort}

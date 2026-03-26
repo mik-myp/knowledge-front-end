@@ -1,5 +1,3 @@
-import { API_CONSTRAINTS } from "@/contracts/api-contracts"
-import { FORM_LIMITS, createRequiredStringRule } from "@/lib/formRules"
 import type { TChatSideProps } from "@/types/ai-chat"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 import {
@@ -129,7 +127,7 @@ const ChatSide = ({
       return
     }
 
-    await onRenameConversation(renameConversationId, values.title.trim())
+    await onRenameConversation(renameConversationId, values.title)
     closeRenameModal()
   }
 
@@ -228,18 +226,16 @@ const ChatSide = ({
           <Form.Item
             name="title"
             rules={[
-              createRequiredStringRule({
-                fieldName: "title",
-                minLength: API_CONSTRAINTS.chat.sessionTitleMinLength,
-                maxLength: API_CONSTRAINTS.chat.sessionTitleMaxLength,
-                requiredMessage: "请输入新的会话标题",
-              }),
+              {
+                required: true,
+                min: 1,
+                max: 50,
+                type: "string",
+                message: "会话标题不能为空，并且长度不能超过 50 个字符",
+              },
             ]}
           >
-            <Input
-              placeholder="请输入新的会话标题"
-              maxLength={FORM_LIMITS.chatSessionTitle}
-            />
+            <Input placeholder="请输入新的会话标题" maxLength={50} />
           </Form.Item>
         </Form>
       </Modal>

@@ -16,3 +16,27 @@ export type TokenPairResult = {
   accessToken: string
   refreshToken: string
 }
+
+/**
+ * 定义注册参数结构。
+ */
+export type TRegisterInput = {
+  username: string
+  email: string
+  password: string
+}
+
+/**
+ * 定义登录参数结构。
+ */
+export type TLoginInput = {
+  email: string
+  password: string
+}
+
+/**
+ * 定义刷新令牌参数结构。
+ */
+export type TRefreshTokenInput = {
+  refreshToken: string
+}

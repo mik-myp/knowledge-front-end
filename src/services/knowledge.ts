@@ -1,23 +1,22 @@
 import request from "@/lib/request"
-import {
-  ensureObjectId,
-  normalizeCreateKnowledgeBaseInput,
-  normalizeListKnowledgeBasesQuery,
-  normalizeUpdateKnowledgeBaseInput,
-  type CreateKnowledgeBaseInput,
-  type ListKnowledgeBasesQuery,
-} from "@/contracts/api-contracts"
-import type { TKnowledgeBaseRecord } from "@/types/knowledge"
+import type {
+  TCreateKnowledgeInput,
+  TKnowledgeBaseRecord,
+  TKnowledgeIdInput,
+  TKnowledgeListResult,
+  TListKnowledgesQuery,
+  TUpdateKnowledgeInput,
+} from "@/types/knowledge"
 
 /**
  * 创建知识库。
  * @param data 创建参数，包含知识库名称和描述。
  * @returns 返回新建后的知识库记录。
  */
-export async function createKnowledge(data: CreateKnowledgeBaseInput) {
+export async function createKnowledge(data: TCreateKnowledgeInput) {
   return await request<TKnowledgeBaseRecord>("/knowledge-bases", {
     method: "POST",
-    data: normalizeCreateKnowledgeBaseInput(data),
+    data,
   })
 }
 
@@ -26,12 +25,9 @@ export async function createKnowledge(data: CreateKnowledgeBaseInput) {
  * @param data 查询参数，包含页码和每页条数。
  * @returns 返回知识库列表以及总数。
  */
-export async function getKnowledges(data: ListKnowledgeBasesQuery) {
-  return await request<{
-    dataList: TKnowledgeBaseRecord[]
-    total: number
-  }>("/knowledge-bases", {
-    params: normalizeListKnowledgeBasesQuery(data),
+export async function getKnowledges(data: TListKnowledgesQuery) {
+  return await request<TKnowledgeListResult>("/knowledge-bases", {
+    params: data,
   })
 }
 
@@ -49,10 +45,8 @@ export async function getAllKnowledges() {
  * @param data.id 需要查询的知识库 ID。
  * @returns 返回对应的知识库记录。
  */
-export async function getKnowledgeById(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${id}`)
+export async function getKnowledgeById(data: TKnowledgeIdInput) {
+  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${data.id}`)
 }
 
 /**
@@ -63,19 +57,13 @@ export async function getKnowledgeById(data: { id: string }) {
  * @param data.description 知识库描述，可选。
  * @returns 返回更新后的知识库记录。
  */
-export async function updateKnowledgeById(data: {
-  id: string
-  name: string
-  description?: string
-}) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${id}`, {
+export async function updateKnowledgeById(data: TUpdateKnowledgeInput) {
+  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${data.id}`, {
     method: "PATCH",
-    data: normalizeUpdateKnowledgeBaseInput({
+    data: {
       name: data.name,
       description: data.description,
-    }),
+    },
   })
 }
 
@@ -85,10 +73,8 @@ export async function updateKnowledgeById(data: {
  * @param data.id 需要删除的知识库 ID。
  * @returns 返回被删除的知识库记录。
  */
-export async function deleteKnowledgeById(data: { id: string }) {
-  const id = ensureObjectId(data.id, "id")
-
-  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${id}`, {
+export async function deleteKnowledgeById(data: TKnowledgeIdInput) {
+  return await request<TKnowledgeBaseRecord>(`/knowledge-bases/${data.id}`, {
     method: "DELETE",
   })
 }

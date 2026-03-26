@@ -1,12 +1,12 @@
-import type {
-  AskChatInput,
-  AskChatMessageInput,
-} from "@/contracts/api-contracts"
-
 /**
  * 定义对话消息类型的类型结构。
  */
 export type TChatMessageType = "system" | "human" | "ai" | "tool"
+
+/**
+ * 定义问答请求消息角色的类型结构。
+ */
+export type TChatRequestMessageRole = "system" | "human" | "tool"
 
 /**
  * 定义对话的数据记录结构。
@@ -79,14 +79,53 @@ export type TChatMessageRecord = {
 }
 
 /**
- * 定义对话问答消息的类型结构。
+ * 定义创建会话参数结构。
  */
-export type TChatAskMessage = AskChatMessageInput
+export type TCreateChatSessionInput = {
+  knowledgeBaseId?: string
+  title?: string
+}
+
+/**
+ * 定义更新会话参数结构。
+ */
+export type TUpdateChatSessionInput = {
+  id: string
+  title: string
+}
+
+/**
+ * 定义按 ID 删除会话参数结构。
+ */
+export type TChatSessionIdInput = {
+  id: string
+}
+
+/**
+ * 定义按会话查询消息参数结构。
+ */
+export type TFindChatMessagesQuery = {
+  sessionId: string
+}
+
+/**
+ * 定义单条问答消息参数结构。
+ */
+export type TChatAskMessage = {
+  role: TChatRequestMessageRole
+  content: string
+  name?: string
+  toolCallId?: string
+}
 
 /**
  * 定义对话问答请求的类型结构。
  */
-export type TChatAskRequest = AskChatInput & {
+export type TChatAskRequest = {
+  messages: TChatAskMessage[]
+  sessionId?: string
+  knowledgeBaseId?: string
+  topK?: number
   localSessionId?: string
 }
 

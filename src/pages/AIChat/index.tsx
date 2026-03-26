@@ -31,7 +31,7 @@ import ChatSide from "./components/ChatSide"
 /**
  * 对话问答接口的完整请求地址。
  */
-const chatAskUrl = `${getRequestBaseURL()}/chat/ask`
+const chatAskStreamUrl = `${getRequestBaseURL()}/chat/ask-stream`
 
 /**
  * 新建会话在前端侧栏中的固定标识。
@@ -73,7 +73,7 @@ const isPersistedConversationKey = (key?: string) =>
  * @returns 返回适合作为会话名称的标题文本。
  */
 const buildConversationTitle = (value: string) => {
-  const nextTitle = value.trim().replace(/\s+/g, " ").slice(0, 50)
+  const nextTitle = value.slice(0, 50)
 
   return nextTitle || "普通会话"
 }
@@ -393,7 +393,7 @@ const AIChat = () => {
   const [provider] = useState(
     new ChatProvider({
       request: XRequest<TChatAskRequest, TChatAskResponse, TChatMessageRecord>(
-        chatAskUrl,
+        chatAskStreamUrl,
         {
           manual: true,
           headers: {
@@ -564,8 +564,7 @@ const AIChat = () => {
   const createDraftConversation = useCallback(
     (params: { knowledge?: TKnowledgeBaseRecord; title?: string }) => {
       const draftConversationKey = `${LOCAL_CONVERSATION_KEY_PREFIX}${Date.now()}`
-      const title =
-        params.title?.trim() || `${params.knowledge?.name ?? "普通"}会话`
+      const title = params.title || `${params.knowledge?.name ?? "普通"}会话`
       const nextConversation: TChatConversationItem = {
         key: draftConversationKey,
         label: title,
@@ -621,8 +620,6 @@ const AIChat = () => {
 
   const handleRenameConversation = useCallback(
     async (conversationId: string, title: string) => {
-      const nextTitle = title.trim()
-
       if (isDraftConversationKey(conversationId)) {
         setDraftConversations((currentDrafts) =>
           currentDrafts.map((item) => {
@@ -632,8 +629,8 @@ const AIChat = () => {
 
             return {
               ...item,
-              title: nextTitle,
-              label: nextTitle,
+              title,
+              label: title,
             }
           })
         )
@@ -642,7 +639,7 @@ const AIChat = () => {
 
       await updateSessionAsync({
         id: conversationId,
-        title: nextTitle,
+        title,
       })
 
       await loadSessionsAsync()
@@ -695,19 +692,18 @@ const AIChat = () => {
         return
       }
 
-      const trimmedValue = value.trim()
       const currentDraftConversation = draftConversations.find(
         (item) => item.key === activeConversationKey
       )
 
       if (activeConversationKey === NEW_CONVERSATION_KEY) {
         const nextDraftConversation = createDraftConversation({
-          title: buildConversationTitle(trimmedValue),
+          title: buildConversationTitle(value),
         })
 
         queueRequest(nextDraftConversation.key, {
           localSessionId: nextDraftConversation.key,
-          messages: [{ role: "human", content: trimmedValue }],
+          messages: [{ role: "human", content: value }],
         })
         return
       }
@@ -716,7 +712,7 @@ const AIChat = () => {
         if (currentDraftConversation.serverSessionId) {
           onRequest({
             sessionId: currentDraftConversation.serverSessionId,
-            messages: [{ role: "human", content: trimmedValue }],
+            messages: [{ role: "human", content: value }],
           })
           return
         }
@@ -725,14 +721,14 @@ const AIChat = () => {
           knowledgeBaseId:
             currentDraftConversation.knowledgeBaseId ?? undefined,
           localSessionId: currentDraftConversation.key,
-          messages: [{ role: "human", content: trimmedValue }],
+          messages: [{ role: "human", content: value }],
         })
         return
       }
 
       onRequest({
         sessionId: activeConversationKey,
-        messages: [{ role: "human", content: trimmedValue }],
+        messages: [{ role: "human", content: value }],
       })
     },
     [

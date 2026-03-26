@@ -1,10 +1,4 @@
 import { cn } from "@/lib/utils"
-import { API_CONSTRAINTS } from "@/contracts/api-contracts"
-import {
-  FORM_LIMITS,
-  createOptionalStringRule,
-  createRequiredStringRule,
-} from "@/lib/formRules"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import {
   createKnowledge,
@@ -393,27 +387,29 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
             label="名称"
             name="name"
             rules={[
-              createRequiredStringRule({
-                fieldName: "name",
-                minLength: API_CONSTRAINTS.knowledgeBase.nameMinLength,
-                maxLength: API_CONSTRAINTS.knowledgeBase.nameMaxLength,
-                requiredMessage: "请输入名称",
-              }),
+              {
+                required: true,
+                min: 1,
+                max: 100,
+                type: "string",
+                message: "名称不能为空，并且长度不能超过 100 个字符",
+              },
             ]}
           >
-            <Input maxLength={FORM_LIMITS.knowledgeBaseName} />
+            <Input maxLength={100} />
           </Form.Item>
           <Form.Item
             label="描述"
             name="description"
             rules={[
-              createOptionalStringRule({
-                fieldName: "description",
-                maxLength: API_CONSTRAINTS.knowledgeBase.descriptionMaxLength,
-              }),
+              {
+                type: "string",
+                max: 500,
+                message: "描述长度不能超过 500 个字符",
+              },
             ]}
           >
-            <Input.TextArea maxLength={FORM_LIMITS.knowledgeBaseDescription} />
+            <Input.TextArea maxLength={500} />
           </Form.Item>
         </Form>
       </Modal>
