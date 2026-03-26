@@ -2,14 +2,11 @@ import { XMarkdown } from "@ant-design/x-markdown"
 import "@ant-design/x-markdown/dist/x-markdown.css"
 import type { TChatListProps } from "@/types/ai-chat"
 import type { TChatMessageSource } from "@/types/chat"
-import type { BubbleListProps } from "@ant-design/x/es/bubble"
 import type { ComponentProps as XMarkdownComponentProps } from "@ant-design/x-markdown"
+import { Bubble, CodeHighlighter, Sources, type BubbleListProps } from "@ant-design/x"
 import type { GetRef } from "antd"
 import { Spin } from "antd"
 import { isValidElement, useEffect, useMemo, useRef } from "react"
-import Bubble from "@ant-design/x/es/bubble"
-import Sources from "@ant-design/x/es/sources"
-import CodeHighlighter from "@ant-design/x/es/code-highlighter"
 
 /**
  * 生成来源位置信息文本。

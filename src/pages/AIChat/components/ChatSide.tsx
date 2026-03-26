@@ -6,7 +6,7 @@ import {
   ExclamationCircleFilled,
   OpenAIOutlined,
 } from "@ant-design/icons"
-import Conversations from "@ant-design/x/es/conversations"
+import { Conversations } from "@ant-design/x"
 import { App, Button, Form, Input, Modal, Spin, theme } from "antd"
 import { useState } from "react"
 import { useNavigate } from "react-router"

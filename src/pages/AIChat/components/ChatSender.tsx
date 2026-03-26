@@ -1,8 +1,8 @@
 import { useStyles } from "@/lib/illustrationTheme"
 import type { TChatSenderProps } from "@/types/ai-chat"
+import { Sender } from "@ant-design/x"
 import { Flex } from "antd"
 import { useState } from "react"
-import Sender from "@ant-design/x/es/sender"
 
 /**
  * 渲染对话发送器组件。
