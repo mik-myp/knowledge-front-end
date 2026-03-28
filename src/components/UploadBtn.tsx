@@ -17,7 +17,13 @@ const maxUploadFileSize = 5 * 1024 * 1024
  * @param props.knowledgeId 知识库 ID。
  * @returns 返回组件渲染结果。
  */
-const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
+const UploadBtn = ({
+  knowledgeId,
+  className,
+}: {
+  knowledgeId?: string
+  className?: string
+}) => {
   const [modalOpen, setModalOpen] = useState(false)
   const { message } = App.useApp()
 
@@ -107,6 +113,7 @@ const UploadBtn = ({ knowledgeId }: { knowledgeId?: string }) => {
         icon={<UploadOutlined />}
         type="primary"
         onClick={() => handleModalOpenChange(true)}
+        className={className}
       >
         上传文件
       </Button>

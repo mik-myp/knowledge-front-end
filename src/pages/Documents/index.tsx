@@ -11,10 +11,22 @@ import {
   downloadDocumentOriginalFile,
   findAllDocuments,
 } from "@/services/document"
-import { formatFileSize } from "@/lib/utils"
+import { formatFileSize, getDocumentIndexStatusMeta } from "@/lib/utils"
 import type { TDocumentListRecord } from "@/types/documents"
-import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
-import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons"
+import {
+  Flex,
+  Table,
+  type TableProps,
+  Button,
+  Popconfirm,
+  Tag,
+  Tooltip,
+} from "antd"
+import {
+  DeleteOutlined,
+  DownloadOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import { useState } from "react"
 import dayjs from "dayjs"
@@ -130,6 +142,26 @@ const Documents = () => {
       },
     },
     {
+      dataIndex: "indexStatus",
+      title: "索引状态",
+      render: (_, record) => {
+        const statusMeta = getDocumentIndexStatusMeta(record.indexStatus)
+
+        return (
+          <div className="flex items-center gap-2">
+            <Tag color={statusMeta.color} className="mr-0">
+              {statusMeta.label}
+            </Tag>
+            {record.indexStatus === "failed" && record.indexingError ? (
+              <Tooltip title={record.indexingError}>
+                <ExclamationCircleOutlined className="text-red-500" />
+              </Tooltip>
+            ) : null}
+          </div>
+        )
+      },
+    },
+    {
       dataIndex: "createdAt",
       title: "创建时间",
       render: (_, record) => {
@@ -180,6 +212,9 @@ const Documents = () => {
     <div className="w-full flex-col">
       <div className="flex items-center justify-end">
         <div className="flex flex-row gap-4">
+          <Button type="primary" onClick={refreshAsync}>
+            刷新
+          </Button>
           <UploadBtn />
           <Button
             disabled={selectedRowKeys.length === 0}

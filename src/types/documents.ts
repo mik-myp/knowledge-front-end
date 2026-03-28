@@ -4,6 +4,11 @@
 export type TDocumentSourceType = "upload" | "editor"
 
 /**
+ * 定义文档索引状态的类型结构。
+ */
+export type TDocumentIndexStatus = "pending" | "indexing" | "success" | "failed"
+
+/**
  * 定义文档列表查询参数结构。
  */
 export type TListDocumentsQuery = {
@@ -56,6 +61,8 @@ export type TDocumentRecord = {
   mimeType: string
   size: number
   sourceType: TDocumentSourceType
+  indexStatus: TDocumentIndexStatus
+  indexingError?: string
   content?: string
   createdAt: string
   updatedAt: string

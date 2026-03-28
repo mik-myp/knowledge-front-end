@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { TDocumentIndexStatus } from "@/types/documents"
 
 /**
  * 合并并去重 Tailwind 类名。
@@ -54,4 +55,49 @@ export function formatFileSize(bytes: number) {
   }
 
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+type TDocumentIndexStatusMeta = {
+  label: string
+  color: "default" | "processing" | "success" | "error"
+  hint: string
+}
+
+/**
+ * 获取文档索引状态的展示信息。
+ * @param status 文档当前索引状态。
+ * @returns 返回状态文案、颜色与补充提示。
+ */
+export function getDocumentIndexStatusMeta(
+  status: TDocumentIndexStatus
+): TDocumentIndexStatusMeta {
+  if (status === "pending") {
+    return {
+      label: "待索引",
+      color: "default",
+      hint: "文档已入库，等待开始索引。",
+    }
+  }
+
+  if (status === "indexing") {
+    return {
+      label: "索引中",
+      color: "processing",
+      hint: "正在处理文档内容，暂时可能无法检索。",
+    }
+  }
+
+  if (status === "failed") {
+    return {
+      label: "失败",
+      color: "error",
+      hint: "索引失败，当前文档不会出现在检索结果中。",
+    }
+  }
+
+  return {
+    label: "已完成",
+    color: "success",
+    hint: "索引已完成，文档可参与检索。",
+  }
 }

@@ -2,12 +2,12 @@ import { DownloadOutlined } from "@ant-design/icons"
 import { useRequest } from "ahooks"
 import { lazy, Suspense, useEffect } from "react"
 import { useParams } from "react-router"
-import { Button, Empty, Flex, Spin, Tag, Typography } from "antd"
+import { Alert, Button, Empty, Flex, Spin, Tag, Typography } from "antd"
 import {
   downloadDocumentOriginalFile,
   findDocumentById,
 } from "@/services/document"
-import { formatFileSize } from "@/lib/utils"
+import { formatFileSize, getDocumentIndexStatusMeta } from "@/lib/utils"
 
 const { Paragraph, Title } = Typography
 
@@ -81,6 +81,7 @@ const DocumentDetail = () => {
   }
 
   const extension = data.extension.toLowerCase()
+  const indexStatusMeta = getDocumentIndexStatusMeta(data.indexStatus)
 
   const renderPreview = () => {
     if (!supportedPreviewExtensions.has(extension)) {
@@ -132,6 +133,7 @@ const DocumentDetail = () => {
               文档详情预览页，支持直接查看内容并下载原文件。
             </Paragraph>
             <Flex gap={8} wrap>
+              <Tag color={indexStatusMeta.color}>{indexStatusMeta.label}</Tag>
               <Tag>{extension.toUpperCase()}</Tag>
               <Tag>{data.mimeType}</Tag>
               <Tag>{data.sourceType}</Tag>
@@ -141,6 +143,7 @@ const DocumentDetail = () => {
 
           <Button
             type="primary"
+            className="mr-1"
             icon={<DownloadOutlined />}
             loading={downloadLoading}
             onClick={() =>
@@ -154,6 +157,27 @@ const DocumentDetail = () => {
             下载原文件
           </Button>
         </div>
+
+        {data.indexStatus === "failed" && data.indexingError ? (
+          <Alert
+            className="mb-4"
+            type="error"
+            showIcon
+            title="索引失败"
+            description={data.indexingError}
+          />
+        ) : null}
+
+        {(data.indexStatus === "pending" ||
+          data.indexStatus === "indexing") && (
+          <Alert
+            className="mb-4"
+            type="info"
+            showIcon
+            title={indexStatusMeta.label}
+            description={indexStatusMeta.hint}
+          />
+        )}
 
         <div className="min-h-0 flex-1 overflow-hidden">{renderPreview()}</div>
       </div>

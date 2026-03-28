@@ -3,7 +3,7 @@ import {
   downloadDocumentOriginalFile,
   findAllDocuments,
 } from "@/services/document"
-import { formatFileSize } from "@/lib/utils"
+import { formatFileSize, getDocumentIndexStatusMeta } from "@/lib/utils"
 import { useStyles } from "@/lib/illustrationTheme"
 import { getKnowledgeById } from "@/services/knowledge"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
@@ -217,6 +217,7 @@ const Knowledges = () => {
                 e?.stopPropagation()
                 await deleteAsync({ id: item.id })
               }}
+              onCancel={(e) => e?.stopPropagation()}
               arrow={false}
             >
               <Button
@@ -299,6 +300,32 @@ const Knowledges = () => {
                 </Text>
               </div>
             </div>
+
+            <div className="mt-3 rounded-xl bg-white/80 px-3 py-2">
+              <div
+                className="mb-1 text-[11px] tracking-[0.16em] uppercase"
+                style={{ color: colorTextSecondary }}
+              >
+                索引状态
+              </div>
+              <div className="flex items-center gap-2">
+                <Text strong>
+                  {getDocumentIndexStatusMeta(item.indexStatus).label}
+                </Text>
+                {item.indexStatus === "failed" && item.indexingError ? (
+                  <Text
+                    type="danger"
+                    ellipsis={{ tooltip: item.indexingError }}
+                  >
+                    {item.indexingError}
+                  </Text>
+                ) : (
+                  <Text type="secondary">
+                    {getDocumentIndexStatusMeta(item.indexStatus).hint}
+                  </Text>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </Card>
@@ -318,7 +345,7 @@ const Knowledges = () => {
         <Descriptions
           title={data?.name}
           items={descriptionsItems}
-          extra={<UploadBtn knowledgeId={id} />}
+          extra={<UploadBtn knowledgeId={id} className="mr-1" />}
         />
         <Divider />
         <div
