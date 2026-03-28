@@ -30,3 +30,28 @@ export function downloadBlob(blob: Blob, fileName: string) {
 
   URL.revokeObjectURL(objectUrl)
 }
+
+/**
+ * 将字节数格式化为适合展示的文件大小字符串。
+ * @param bytes 文件大小，单位为字节。
+ * @returns 返回带单位的格式化结果。
+ */
+export function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 B"
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(2)} KB`
+  }
+
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  }
+
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}

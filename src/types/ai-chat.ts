@@ -7,7 +7,7 @@ import type { TKnowledgeBaseRecord } from "@/types/knowledge"
 export type TChatListMessageItem = {
   id: string | number
   message: TChatMessageRecord
-  status?: string
+  status?: "local" | "loading" | "updating" | "success" | "error" | "abort"
 }
 
 /**

@@ -45,6 +45,7 @@ export type TChatMessageSource = {
   startIndex?: number
   endIndex?: number
   score?: number
+  text?: string
 }
 
 /**

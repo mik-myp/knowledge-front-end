@@ -1,6 +1,4 @@
-import { XMarkdown } from "@ant-design/x-markdown"
-import "@ant-design/x-markdown/dist/x-markdown.css"
-import "@ant-design/x-markdown/themes/light.css"
+import Markdown from "@/components/Markdown"
 
 /**
  * Markdown 预览组件的入参。
@@ -14,7 +12,7 @@ type MarkdownPreviewProps = {
  */
 const MarkdownPreview = ({ content }: MarkdownPreviewProps) => {
   return (
-    <XMarkdown
+    <Markdown
       className="x-markdown-light scrollbar-none h-full overflow-y-auto"
       content={content ?? ""}
     />

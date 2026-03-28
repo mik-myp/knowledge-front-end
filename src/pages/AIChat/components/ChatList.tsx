@@ -1,26 +1,11 @@
 import type { TChatListProps } from "@/types/ai-chat"
-import type { TChatMessageSource } from "@/types/chat"
+import type { TChatMessageRecord } from "@/types/chat"
+import Markdown from "@/components/Markdown"
 import { Bubble, type BubbleListProps } from "@ant-design/x"
 import type { GetRef } from "antd"
 import { Spin } from "antd"
-import { isValidElement, useEffect, useMemo, useRef } from "react"
-import ChatMarkdownContent from "./ChatMarkdownContent"
-
-/**
- * 根据消息内容类型渲染气泡内容，字符串消息走 Markdown 展示。
- */
-const renderBubbleContent = (
-  content: unknown,
-  sources?: TChatMessageSource[]
-) => {
-  if (isValidElement(content)) {
-    return content
-  }
-
-  const text = String(content ?? "")
-
-  return <ChatMarkdownContent content={text} sources={sources} />
-}
+import { useEffect, useMemo, useRef } from "react"
+import ActionsFooter from "./ActionsFooter"
 
 /**
  * 显示 AI 正在流式生成内容时的状态提示。
@@ -43,6 +28,50 @@ const ThinkingIndicator = ({ text }: { text?: string }) => {
  */
 const ErrorIndicator = ({ text }: { text?: string }) => {
   return <div className="text-sm leading-7 text-red-500">{text}</div>
+}
+
+const isAiProgressMessage = (
+  messageItem?: TChatListProps["messages"][number]
+) => {
+  return Boolean(
+    messageItem &&
+    messageItem.message.messageType === "ai" &&
+    (messageItem.status === "loading" || messageItem.status === "updating") &&
+    messageItem.message.streamStatus === "progress"
+  )
+}
+
+const isAiStreamingMessage = (
+  messageItem?: TChatListProps["messages"][number]
+) => {
+  return Boolean(
+    messageItem &&
+    messageItem.message.messageType === "ai" &&
+    (messageItem.status === "loading" || messageItem.status === "updating") &&
+    messageItem.message.streamStatus !== "error"
+  )
+}
+
+const isAiCompleteMessage = (
+  messageItem?: TChatListProps["messages"][number]
+) => {
+  return Boolean(
+    messageItem &&
+    messageItem.message.messageType === "ai" &&
+    messageItem.status === "success"
+  )
+}
+
+const mapBubbleRole = (messageType: TChatMessageRecord["messageType"]) => {
+  if (messageType === "human") {
+    return "user"
+  }
+
+  if (messageType === "system") {
+    return "system"
+  }
+
+  return "ai"
 }
 
 /**
@@ -76,13 +105,51 @@ const ChatList = ({
 
   const bubbleRole: BubbleListProps["role"] = useMemo(() => {
     return {
-      ai: {
-        placement: "start",
-        typing: false,
-        shape: "corner",
-        contentRender: (content) => renderBubbleContent(content),
+      ai: (item) => {
+        const messageItem = item.extraInfo as TChatListProps["messages"][number]
+
+        return {
+          placement: "start",
+          typing: false,
+          streaming: isAiStreamingMessage(messageItem),
+          shape: "corner",
+          loading: isAiProgressMessage(messageItem),
+          loadingRender: () => {
+            return (
+              <ThinkingIndicator
+                text={messageItem.message.content || "正在生成回答"}
+              />
+            )
+          },
+          contentRender: () => {
+            if (messageItem.message.streamStatus === "error") {
+              return <ErrorIndicator text={messageItem.message.content} />
+            }
+
+            return (
+              <Markdown
+                content={messageItem.message.content}
+                streaming={
+                  isAiStreamingMessage(messageItem)
+                    ? {
+                        hasNextChunk: true,
+                        enableAnimation: true,
+                      }
+                    : undefined
+                }
+              />
+            )
+          },
+          footer: () => {
+            if (isAiCompleteMessage(messageItem)) {
+              return <ActionsFooter messageItem={messageItem} />
+            }
+
+            return null
+          },
+        }
       },
-      human: {
+      user: {
         placement: "end",
         typing: false,
         shape: "corner",
@@ -90,7 +157,6 @@ const ChatList = ({
       system: {
         shape: "corner",
         variant: "borderless",
-        contentRender: (content) => renderBubbleContent(content),
       },
     }
   }, [])
@@ -126,25 +192,10 @@ const ChatList = ({
             ref={bubbleListRef}
             items={messages.map((item) => ({
               key: item.id,
-              content:
-                item.message.messageType === "ai" &&
-                (item.status === "loading" || item.status === "updating") &&
-                item.message.streamStatus === "progress" ? (
-                  <ThinkingIndicator
-                    text={item.message.content || "正在生成回答"}
-                  />
-                ) : item.message.messageType === "ai" &&
-                  item.message.streamStatus === "error" ? (
-                  <ErrorIndicator text={item.message.content} />
-                ) : item.message.messageType === "human" ? (
-                  item.message.content
-                ) : (
-                  renderBubbleContent(
-                    item.message.content,
-                    item.message.sources
-                  )
-                ),
-              role: item.message.messageType,
+              content: item.message.content,
+              role: mapBubbleRole(item.message.messageType),
+              status: item.status,
+              extraInfo: item,
             }))}
             styles={{
               root: {

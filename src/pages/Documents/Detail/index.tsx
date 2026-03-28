@@ -7,6 +7,7 @@ import {
   downloadDocumentOriginalFile,
   findDocumentById,
 } from "@/services/document"
+import { formatFileSize } from "@/lib/utils"
 
 const { Paragraph, Title } = Typography
 
@@ -134,7 +135,7 @@ const DocumentDetail = () => {
               <Tag>{extension.toUpperCase()}</Tag>
               <Tag>{data.mimeType}</Tag>
               <Tag>{data.sourceType}</Tag>
-              <Tag>{data.size} KB</Tag>
+              <Tag>{formatFileSize(data.size)}</Tag>
             </Flex>
           </div>
 

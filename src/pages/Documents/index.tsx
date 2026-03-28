@@ -1,4 +1,4 @@
-import UploadBtn from "./components/UploadBtn"
+import UploadBtn from "../../components/UploadBtn"
 import {
   useAntdTable,
   useEventListener,
@@ -11,6 +11,7 @@ import {
   downloadDocumentOriginalFile,
   findAllDocuments,
 } from "@/services/document"
+import { formatFileSize } from "@/lib/utils"
 import type { TDocumentListRecord } from "@/types/documents"
 import { Flex, Table, type TableProps, Button, Popconfirm } from "antd"
 import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons"
@@ -123,7 +124,10 @@ const Documents = () => {
     },
     {
       dataIndex: "size",
-      title: "文件大小（KB）",
+      title: "文件大小",
+      render: (_, record) => {
+        return formatFileSize(record.size)
+      },
     },
     {
       dataIndex: "createdAt",

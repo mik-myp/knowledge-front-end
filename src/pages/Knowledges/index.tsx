@@ -3,6 +3,7 @@ import {
   downloadDocumentOriginalFile,
   findAllDocuments,
 } from "@/services/document"
+import { formatFileSize } from "@/lib/utils"
 import { useStyles } from "@/lib/illustrationTheme"
 import { getKnowledgeById } from "@/services/knowledge"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
@@ -25,7 +26,7 @@ import {
 } from "antd"
 import { useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router"
-import UploadBtn from "../Documents/components/UploadBtn"
+import UploadBtn from "../../components/UploadBtn"
 
 const { Text } = Typography
 
@@ -33,19 +34,6 @@ const { Text } = Typography
  * 定义文档页码大小。
  */
 const documentsPageSize = 12
-
-/**
- * 格式化文件大小。
- * @param size 大小。
- * @returns 返回字符串结果。
- */
-const formatFileSize = (size: number): string => {
-  if (size < 1024) {
-    return `${size} KB`
-  }
-
-  return `${(size / 1024).toFixed(2)} MB`
-}
 
 /**
  * 获取ExtensionPalette。
@@ -202,14 +190,8 @@ const Knowledges = () => {
       <Card
         title={
           <div className="flex min-w-0 flex-col gap-1">
-            <Text strong ellipsis className="text-sm">
+            <Text strong ellipsis className="text-base">
               {item.originalName}
-            </Text>
-            <Text
-              className="text-xs tracking-[0.18em]! uppercase"
-              type="secondary"
-            >
-              document card
             </Text>
           </div>
         }
