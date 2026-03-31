@@ -1,0 +1,32 @@
+{
+  "actions": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "create": "Create",
+    "delete": "Delete",
+    "download": "Download",
+    "edit": "Edit",
+    "logout": "Log out",
+    "refresh": "Refresh",
+    "save": "Save",
+    "upload": "Upload",
+    "viewAll": "View all",
+    "viewDetails": "View details"
+  },
+  "labels": {
+    "conversation": "Conversation",
+    "description": "Description",
+    "file": "File",
+    "files": "Files",
+    "home": "Home",
+    "knowledgeBase": "Knowledge Base",
+    "name": "Name"
+  },
+  "states": {
+    "completed": "Completed",
+    "loading": "Loading...",
+    "pending": "Pending"
+  }
+}

@@ -17,6 +17,7 @@ import { getAllKnowledges } from "@/services/knowledge"
 import { userMe } from "@/services/user"
 import { useStyles } from "@/lib/illustrationTheme"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 const { Paragraph, Text, Title } = Typography
 
@@ -48,9 +49,12 @@ const loadHomeOverview = async () => {
  * @param value 需要格式化的时间字符串。
  * @returns 返回适合首页展示的时间文案。
  */
-const formatDateTime = (value?: string) => {
+const formatDateTime = (
+  value: string | undefined,
+  enteredWorkspaceLabel: string
+) => {
   if (!value) {
-    return "刚刚进入工作台"
+    return enteredWorkspaceLabel
   }
 
   return dayjs(value).format("YYYY-MM-DD HH:mm")
@@ -61,26 +65,29 @@ const formatDateTime = (value?: string) => {
  * @param sourceType 文档来源类型。
  * @returns 返回前端展示使用的来源名称。
  */
-const getSourceTypeLabel = (sourceType: "upload" | "editor") => {
-  return sourceType === "upload" ? "上传文档" : "编辑器文档"
+const getSourceTypeLabel = (
+  sourceType: "upload" | "editor",
+  translate: (key: string) => string
+) => {
+  return translate(`sourceType.${sourceType}`)
 }
 
 /**
  * 根据当前时间生成首页问候语。
  * @returns 返回早上、下午或晚上的问候文本。
  */
-const getGreeting = () => {
+const getGreeting = (translate: (key: string) => string) => {
   const hour = dayjs().hour()
 
   if (hour < 12) {
-    return "早上好"
+    return translate("greeting.morning")
   }
 
   if (hour < 18) {
-    return "下午好"
+    return translate("greeting.afternoon")
   }
 
-  return "晚上好"
+  return translate("greeting.evening")
 }
 
 /**
@@ -88,6 +95,7 @@ const getGreeting = () => {
  * @returns 返回组件渲染结果。
  */
 const Home = () => {
+  const { t } = useTranslation("home")
   const navigate = useNavigate()
   const { styles } = useStyles()
   const {
@@ -118,40 +126,41 @@ const Home = () => {
   const recentSessions = sessions.slice(0, 5).map((item) => ({
     ...item,
     knowledgeName: item.knowledgeBaseId
-      ? (knowledgeNameMap.get(item.knowledgeBaseId) ?? "知识库会话")
-      : "普通会话",
+      ? (knowledgeNameMap.get(item.knowledgeBaseId) ??
+        t("recentSessions.knowledgeConversation"))
+      : t("recentSessions.generalConversation"),
   }))
 
   const statCards = [
     {
       key: "knowledge",
-      label: "知识库",
+      label: t("stats.knowledge.label"),
       value: knowledgeCount,
-      caption: "用于组织主题、文档和问答范围。",
+      caption: t("stats.knowledge.caption"),
       icon: <DatabaseOutlined />,
       background: "#FFF2E8",
     },
     {
       key: "document",
-      label: "文档总量",
+      label: t("stats.document.label"),
       value: documentCount,
-      caption: "首页展示最近 6 份，其余文档可在文档页继续管理。",
+      caption: t("stats.document.caption"),
       icon: <FileTextOutlined />,
       background: "#E6F4FF",
     },
     {
       key: "conversation",
-      label: "AI 会话",
+      label: t("stats.conversation.label"),
       value: conversationCount,
-      caption: "包含普通会话和绑定知识库的问答记录。",
+      caption: t("stats.conversation.caption"),
       icon: <RobotOutlined />,
       background: "#F6FFED",
     },
     {
       key: "readiness",
-      label: "工作台进度",
+      label: t("stats.readiness.label"),
       value: `${readinessPercent}%`,
-      caption: `已完成 ${completedSteps} / 3 个关键准备动作。`,
+      caption: t("stats.readiness.caption", { completed: completedSteps }),
       icon: <BookOutlined />,
       background: "#FFFBE6",
     },
@@ -159,12 +168,12 @@ const Home = () => {
 
   const summaryTitle =
     completedSteps === 0
-      ? "从知识库、文档和会话这三步开始，把工作台真正跑起来。"
+      ? t("summary.none")
       : completedSteps === 1
-        ? "基础骨架已经有了，继续补齐文档或会话，首页就会更有内容。"
+        ? t("summary.one")
         : completedSteps === 2
-          ? "离完整工作流只差一步，现在最适合开始沉淀问答记录。"
-          : "工作台已经成型，可以继续扩充知识库或回到 AI 对话里深入提问。"
+          ? t("summary.two")
+          : t("summary.full")
 
   return (
     <Spin spinning={loading}>
@@ -190,10 +199,16 @@ const Home = () => {
                   level={1}
                   className="mb-3 max-w-4xl text-[40px]! leading-[1.08]!"
                 >
-                  {getGreeting()}
-                  {user ? `，${user.username}` : ""}。
+                  {user
+                    ? t("hero.titleWithUser", {
+                        greeting: getGreeting((key) => t(key)),
+                        username: user.username,
+                      })
+                    : t("hero.titleWithoutUser", {
+                        greeting: getGreeting((key) => t(key)),
+                      })}
                   <br />
-                  知识库工作台已经准备好继续推进。
+                  {t("hero.description")}
                 </Title>
 
                 <Paragraph className="mb-0 max-w-3xl text-base leading-8 text-black/70">
@@ -207,21 +222,21 @@ const Home = () => {
                     icon={<RobotOutlined />}
                     onClick={() => navigate("/ai")}
                   >
-                    进入 AI 对话
+                    {t("hero.enterAiChat")}
                   </Button>
                   <Button
                     size="large"
                     icon={<FileTextOutlined />}
                     onClick={() => navigate("/documents")}
                   >
-                    查看文档
+                    {t("hero.viewDocuments")}
                   </Button>
                   <Button
                     size="large"
                     icon={<ReloadOutlined />}
                     onClick={() => void refreshAsync()}
                   >
-                    刷新首页
+                    {t("hero.refresh")}
                   </Button>
                 </div>
               </div>
@@ -235,7 +250,7 @@ const Home = () => {
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-medium tracking-[0.18em] text-black/45 uppercase">
-                      工作流进度
+                      {t("progress.eyebrow")}
                     </div>
                     <div className="mt-2 text-3xl font-semibold text-black">
                       {readinessPercent}%
@@ -257,29 +272,35 @@ const Home = () => {
                     {
                       key: "knowledge",
                       done: knowledgeCount > 0,
-                      title: "建立知识库",
+                      title: t("progress.knowledge.title"),
                       detail:
                         knowledgeCount > 0
-                          ? `当前已有 ${knowledgeCount} 个知识库`
-                          : "先创建一个主题入口，后续文档和问答都围绕它展开",
+                          ? t("progress.knowledge.done", {
+                              count: knowledgeCount,
+                            })
+                          : t("progress.knowledge.todo"),
                     },
                     {
                       key: "document",
                       done: documentCount > 0,
-                      title: "导入文档",
+                      title: t("progress.document.title"),
                       detail:
                         documentCount > 0
-                          ? `当前已收录 ${documentCount} 份文档`
-                          : "上传 PDF、Markdown 或文本，让知识库真正有内容可检索",
+                          ? t("progress.document.done", {
+                              count: documentCount,
+                            })
+                          : t("progress.document.todo"),
                     },
                     {
                       key: "conversation",
                       done: conversationCount > 0,
-                      title: "开始问答",
+                      title: t("progress.conversation.title"),
                       detail:
                         conversationCount > 0
-                          ? `当前已有 ${conversationCount} 个问答会话`
-                          : "发起第一轮问答，让文档内容进入实际使用阶段",
+                          ? t("progress.conversation.done", {
+                              count: conversationCount,
+                            })
+                          : t("progress.conversation.todo"),
                     },
                   ].map((step, index) => (
                     <div
@@ -301,7 +322,9 @@ const Home = () => {
                           <div className="flex items-center justify-between gap-3">
                             <Text strong>{step.title}</Text>
                             <Text type={step.done ? undefined : "secondary"}>
-                              {step.done ? "已完成" : "待完成"}
+                              {step.done
+                                ? t("common:states.completed")
+                                : t("common:states.pending")}
                             </Text>
                           </div>
                           <div className="mt-1 text-sm leading-6 text-black/55">
@@ -358,19 +381,21 @@ const Home = () => {
               <div className="mb-6 flex items-center justify-between gap-3">
                 <div>
                   <div className="text-xs font-medium tracking-[0.18em] text-black/45 uppercase">
-                    最近文档
+                    {t("recentDocuments.eyebrow")}
                   </div>
                   <Title level={3} className="mt-2 mb-0!">
-                    最近导入的知识内容
+                    {t("recentDocuments.title")}
                   </Title>
                 </div>
-                <Button onClick={() => navigate("/documents")}>查看全部</Button>
+                <Button onClick={() => navigate("/documents")}>
+                  {t("recentDocuments.button")}
+                </Button>
               </div>
 
               {documents.length === 0 ? (
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description="还没有文档，先上传一份试试。"
+                  description={t("recentDocuments.empty")}
                 />
               ) : (
                 <div className="grid gap-3">
@@ -388,7 +413,9 @@ const Home = () => {
                               {item.extension}
                             </span>
                             <span className="rounded-full bg-black/6 px-3 py-1 text-xs text-black/60">
-                              {getSourceTypeLabel(item.sourceType)}
+                              {getSourceTypeLabel(item.sourceType, (key) =>
+                                t(key)
+                              )}
                             </span>
                             <span className="rounded-full bg-black/6 px-3 py-1 text-xs text-black/60">
                               {item.knowledgeBaseName}
@@ -400,12 +427,17 @@ const Home = () => {
                           </div>
 
                           <div className="mt-2 text-sm text-black/55">
-                            收录时间 {formatDateTime(item.createdAt)}
+                            {t("recentDocuments.collectedAt", {
+                              time: formatDateTime(
+                                item.createdAt,
+                                t("fallback.enteredWorkspace")
+                              ),
+                            })}
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 text-sm text-black/45">
-                          查看详情
+                          {t("common:actions.viewDetails")}
                           <ArrowRightOutlined />
                         </div>
                       </div>
@@ -425,19 +457,21 @@ const Home = () => {
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-medium tracking-[0.18em] text-black/45 uppercase">
-                      最近会话
+                      {t("recentSessions.eyebrow")}
                     </div>
                     <Title level={3} className="mt-2 mb-0!">
-                      AI 对话轨迹
+                      {t("recentSessions.title")}
                     </Title>
                   </div>
-                  <Button onClick={() => navigate("/ai")}>进入对话</Button>
+                  <Button onClick={() => navigate("/ai")}>
+                    {t("recentSessions.button")}
+                  </Button>
                 </div>
 
                 {recentSessions.length === 0 ? (
                   <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="还没有问答记录，去开始第一轮对话。"
+                    description={t("recentSessions.empty")}
                   />
                 ) : (
                   <div className="flex flex-col gap-3">
@@ -476,10 +510,10 @@ const Home = () => {
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-xs font-medium tracking-[0.18em] text-black/45 uppercase">
-                      知识库清单
+                      {t("knowledgeBases.eyebrow")}
                     </div>
                     <Title level={3} className="mt-2 mb-0!">
-                      当前内容骨架
+                      {t("knowledgeBases.title")}
                     </Title>
                   </div>
                   <Button
@@ -491,14 +525,14 @@ const Home = () => {
                       )
                     }
                   >
-                    继续完善
+                    {t("knowledgeBases.button")}
                   </Button>
                 </div>
 
                 {knowledges.length === 0 ? (
                   <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="还没有知识库，先建立主题容器。"
+                    description={t("knowledgeBases.empty")}
                   />
                 ) : (
                   <div className="flex flex-col gap-3">
@@ -519,7 +553,7 @@ const Home = () => {
                             </div>
                             <div className="mt-1 line-clamp-2 text-sm leading-6 text-black/55">
                               {item.description?.trim() ||
-                                "还没有描述，建议补充这个知识库要解决的问题。"}
+                                t("knowledgeBases.defaultDescription")}
                             </div>
                           </div>
                         </div>

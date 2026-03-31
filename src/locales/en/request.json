@@ -1,0 +1,23 @@
+{
+  "status": {
+    "400": "Invalid request parameters",
+    "401": "Unauthorized. Please log in again",
+    "403": "Access denied",
+    "404": "Requested resource was not found",
+    "408": "Request timed out",
+    "500": "The server is unavailable. Please try again later",
+    "501": "Service not implemented",
+    "502": "Bad gateway",
+    "503": "Service unavailable",
+    "504": "Gateway timeout"
+  },
+  "errors": {
+    "authRequired": "Unauthorized. Please log in again",
+    "refreshFailed": "Failed to refresh login session",
+    "requestFailed": "Request failed",
+    "requestSendFailed": "Failed to send request"
+  },
+  "notifications": {
+    "requestFailedTitle": "Request failed"
+  }
+}

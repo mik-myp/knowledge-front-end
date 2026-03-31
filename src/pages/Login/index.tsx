@@ -7,12 +7,14 @@ import { Button, Form, Input } from "antd"
 import AuthPageShell from "@/components/auth/AuthPageShell"
 import { persistAuthSession } from "@/lib/auth"
 import { userLogin } from "@/services/user"
+import { useTranslation } from "react-i18next"
 
 /**
  * 渲染登录组件。
  * @returns 返回组件渲染结果。
  */
 const Login = () => {
+  const { t } = useTranslation("auth")
   const navigate = useNavigate()
   const [form] = Form.useForm()
   const [showPassword, setShowPassword] = useState(false)
@@ -26,12 +28,12 @@ const Login = () => {
 
   return (
     <AuthPageShell
-      title="登录你的账号"
-      description="输入邮箱和密码，继续访问知识库工作台。"
-      footerText="还没有账号？"
-      footerLinkText="立即注册"
+      title={t("login.title")}
+      description={t("login.description")}
+      footerText={t("login.footerText")}
+      footerLinkText={t("login.footerLinkText")}
       footerLinkTo="/register"
-      imageAlt="登录页互动插画"
+      imageAlt={t("login.imageAlt")}
       password={password}
       showPassword={showPassword}
       isTyping={isTyping}
@@ -49,24 +51,24 @@ const Login = () => {
       >
         <Form.Item
           name="email"
-          label="邮箱"
+          label={t("form.email.label")}
           rules={[
             {
               required: true,
               type: "email",
-              message: "请输入合法邮箱",
+              message: t("form.email.invalid"),
             },
             {
               type: "string",
               max: 100,
-              message: "邮箱长度不能超过 100 个字符",
+              message: t("form.email.max"),
             },
           ]}
         >
           <Input
             size="large"
             prefix={<MailOutlined />}
-            placeholder="请输入邮箱"
+            placeholder={t("form.email.placeholder")}
             autoComplete="email"
             maxLength={100}
             onFocus={() => setIsTyping(true)}
@@ -76,21 +78,21 @@ const Login = () => {
 
         <Form.Item
           name="password"
-          label="密码"
+          label={t("form.password.label")}
           rules={[
             {
               required: true,
               type: "string",
               min: 8,
               max: 32,
-              message: "请输入密码，且长度必须在 8 到 32 个字符之间",
+              message: t("form.password.range"),
             },
           ]}
         >
           <Input.Password
             size="large"
             prefix={<LockOutlined />}
-            placeholder="请输入密码"
+            placeholder={t("form.password.placeholder")}
             autoComplete="current-password"
             maxLength={32}
             onFocus={() => setIsTyping(true)}
@@ -110,7 +112,7 @@ const Login = () => {
             htmlType="submit"
             loading={loading}
           >
-            登录
+            {t("login.button")}
           </Button>
         </Form.Item>
       </Form>

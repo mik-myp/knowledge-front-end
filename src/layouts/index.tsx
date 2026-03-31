@@ -1,10 +1,15 @@
 import { Outlet } from "react-router"
 import { Button, Layout, theme } from "antd"
 import { useState } from "react"
-import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons"
+import {
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  TranslationOutlined,
+} from "@ant-design/icons"
 
 import UserInfo from "./components/UserInfo"
 import NavSider from "./components/NavSider"
+import { useGlobal } from "@/stores/useGlobal"
 
 const { Header, Content } = Layout
 
@@ -18,6 +23,12 @@ const BaseLayout = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken()
+
+  const { language, setLanguage } = useGlobal()
+
+  const handleChangeLanguage = () => {
+    setLanguage(language === "zh-cn" ? "en" : "zh-cn")
+  }
 
   return (
     <Layout className="h-full">
@@ -33,7 +44,14 @@ const BaseLayout = () => {
             onClick={() => setCollapsed(!collapsed)}
             className="h-8 w-8 text-base"
           />
-          <UserInfo />
+          <div className="flex items-center gap-4">
+            <Button
+              icon={<TranslationOutlined />}
+              type="text"
+              onClick={handleChangeLanguage}
+            />
+            <UserInfo />
+          </div>
         </Header>
         <Content
           style={{

@@ -5,6 +5,7 @@ import { Bubble, type BubbleListProps } from "@ant-design/x"
 import type { GetRef } from "antd"
 import { Spin } from "antd"
 import { useEffect, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import ActionsFooter from "./ActionsFooter"
 
 /**
@@ -13,7 +14,7 @@ import ActionsFooter from "./ActionsFooter"
 const ThinkingIndicator = ({ text }: { text?: string }) => {
   return (
     <div className="flex items-center gap-3 px-1 py-1">
-      <div className="text-sm text-black/55">{text ?? "正在生成回答"}</div>
+      <div className="text-sm text-black/55">{text ?? ""}</div>
       <div className="flex items-center gap-1">
         <span className="h-2 w-2 animate-bounce rounded-full bg-black/35 [animation-delay:-0.3s]" />
         <span className="h-2 w-2 animate-bounce rounded-full bg-black/45 [animation-delay:-0.15s]" />
@@ -82,6 +83,7 @@ const ChatList = ({
   messages,
   messageLoading,
 }: TChatListProps) => {
+  const { t } = useTranslation("chat")
   const bubbleListRef = useRef<GetRef<typeof Bubble.List>>(null)
   const scrollAnimationFrameRef = useRef<number | null>(null)
 
@@ -117,7 +119,7 @@ const ChatList = ({
           loadingRender: () => {
             return (
               <ThinkingIndicator
-                text={messageItem.message.content || "正在生成回答"}
+                text={messageItem.message.content || t("list.thinking")}
               />
             )
           },
@@ -159,7 +161,7 @@ const ChatList = ({
         variant: "borderless",
       },
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     scrollToBottom("instant")

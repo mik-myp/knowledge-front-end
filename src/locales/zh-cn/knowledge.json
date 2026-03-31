@@ -1,0 +1,40 @@
+{
+  "sidebar": {
+    "sectionTitle": "知识库",
+    "menu": {
+      "delete": "删除",
+      "edit": "编辑"
+    },
+    "delete": {
+      "content": "确定要删除该知识库吗？",
+      "title": "删除知识库"
+    },
+    "modal": {
+      "createTitle": "新增知识库",
+      "editTitle": "编辑知识库"
+    },
+    "form": {
+      "description": {
+        "label": "描述",
+        "max": "描述长度不能超过 500 个字符"
+      },
+      "name": {
+        "label": "名称",
+        "range": "名称不能为空，并且长度不能超过 100 个字符"
+      }
+    }
+  },
+  "detail": {
+    "description": "描述",
+    "deleteConfirm": "确定要删除吗？",
+    "empty": "暂无文档",
+    "fileSize": "文件大小",
+    "fileSource": "文件来源",
+    "indexStatus": "索引状态",
+    "loadedAll": "已加载全部文档"
+  },
+  "sourceType": {
+    "editor": "编辑器",
+    "upload": "上传"
+  }
+}

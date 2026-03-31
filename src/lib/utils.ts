@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import type { TDocumentIndexStatus } from "@/types/documents"
+import i18n from "@/lib/i18n"
 
 /**
  * 合并并去重 Tailwind 类名。
@@ -73,31 +74,31 @@ export function getDocumentIndexStatusMeta(
 ): TDocumentIndexStatusMeta {
   if (status === "pending") {
     return {
-      label: "待索引",
+      label: i18n.t("indexStatusMeta.pending.label", { ns: "document" }),
       color: "default",
-      hint: "文档已入库，等待开始索引。",
+      hint: i18n.t("indexStatusMeta.pending.hint", { ns: "document" }),
     }
   }
 
   if (status === "indexing") {
     return {
-      label: "索引中",
+      label: i18n.t("indexStatusMeta.indexing.label", { ns: "document" }),
       color: "processing",
-      hint: "正在处理文档内容，暂时可能无法检索。",
+      hint: i18n.t("indexStatusMeta.indexing.hint", { ns: "document" }),
     }
   }
 
   if (status === "failed") {
     return {
-      label: "失败",
+      label: i18n.t("indexStatusMeta.failed.label", { ns: "document" }),
       color: "error",
-      hint: "索引失败，当前文档不会出现在检索结果中。",
+      hint: i18n.t("indexStatusMeta.failed.hint", { ns: "document" }),
     }
   }
 
   return {
-    label: "已完成",
+    label: i18n.t("indexStatusMeta.completed.label", { ns: "document" }),
     color: "success",
-    hint: "索引已完成，文档可参与检索。",
+    hint: i18n.t("indexStatusMeta.completed.hint", { ns: "document" }),
   }
 }

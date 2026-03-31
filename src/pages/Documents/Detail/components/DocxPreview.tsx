@@ -3,6 +3,7 @@ import mammoth from "mammoth"
 import { useEffect, useState } from "react"
 import { Empty, Spin } from "antd"
 import { fetchDocumentFile } from "@/services/document"
+import { useTranslation } from "react-i18next"
 
 /**
  * 描述 DOCX 预览组件的属性。
@@ -18,6 +19,7 @@ type DocxPreviewProps = {
  * @returns 返回组件渲染结果。
  */
 const DocxPreview = ({ documentId }: DocxPreviewProps) => {
+  const { t } = useTranslation("document")
   const [html, setHtml] = useState("")
   const [loadFailed, setLoadFailed] = useState(false)
 
@@ -63,11 +65,11 @@ const DocxPreview = ({ documentId }: DocxPreviewProps) => {
   }
 
   if (loadFailed) {
-    return <Empty description="DOCX 解析失败" />
+    return <Empty description={t("preview.docxFailed")} />
   }
 
   if (!html) {
-    return <Empty description="DOCX 暂无可预览内容" />
+    return <Empty description={t("preview.docxEmpty")} />
   }
 
   return (

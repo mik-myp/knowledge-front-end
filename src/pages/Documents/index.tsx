@@ -31,6 +31,7 @@ import useDocumentsVersion from "@/stores/useDocumentsVersion"
 import { useState } from "react"
 import dayjs from "dayjs"
 import { useNavigate } from "react-router"
+import { useTranslation } from "react-i18next"
 
 /**
  * 表格可视区域需要扣除的固定高度。
@@ -48,6 +49,7 @@ const getTableScrollY = (): number => window.innerHeight - diffHeight
  * @returns 返回组件渲染结果。
  */
 const Documents = () => {
+  const { t } = useTranslation(["document", "common"])
   const navigate = useNavigate()
   const { version, invalidate } = useDocumentsVersion()
 
@@ -109,7 +111,7 @@ const Documents = () => {
 
   const columns: TableProps<TDocumentListRecord>["columns"] = [
     {
-      title: "文件名",
+      title: t("list.fileName"),
       dataIndex: "originalName",
       render: (_, record) => {
         return (
@@ -123,27 +125,27 @@ const Documents = () => {
       },
     },
     {
-      title: "所属知识库",
+      title: t("list.knowledgeBase"),
       dataIndex: "knowledgeBaseName",
     },
     {
-      title: "文件扩展名",
+      title: t("list.extension"),
       dataIndex: "extension",
     },
     {
       dataIndex: "mimeType",
-      title: "文件类型",
+      title: t("list.fileType"),
     },
     {
       dataIndex: "size",
-      title: "文件大小",
+      title: t("list.fileSize"),
       render: (_, record) => {
         return formatFileSize(record.size)
       },
     },
     {
       dataIndex: "indexStatus",
-      title: "索引状态",
+      title: t("list.indexStatus"),
       render: (_, record) => {
         const statusMeta = getDocumentIndexStatusMeta(record.indexStatus)
 
@@ -163,20 +165,20 @@ const Documents = () => {
     },
     {
       dataIndex: "createdAt",
-      title: "创建时间",
+      title: t("list.createdAt"),
       render: (_, record) => {
         return dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss")
       },
     },
     {
       dataIndex: "updatedAt",
-      title: "更新时间",
+      title: t("list.updatedAt"),
       render: (_, record) => {
         return dayjs(record.updatedAt).format("YYYY-MM-DD HH:mm:ss")
       },
     },
     {
-      title: "操作",
+      title: t("list.actions"),
       dataIndex: "action",
       width: 150,
       render: (_, record) => {
@@ -196,7 +198,7 @@ const Documents = () => {
               loading={downloadLoading}
             />
             <Popconfirm
-              title="确定要删除吗？"
+              title={t("list.deleteConfirm")}
               onConfirm={() => deleteAsync({ id: record.id })}
               arrow={false}
             >
@@ -213,7 +215,7 @@ const Documents = () => {
       <div className="flex items-center justify-end">
         <div className="flex flex-row gap-4">
           <Button type="primary" onClick={refreshAsync}>
-            刷新
+            {t("list.refresh")}
           </Button>
           <UploadBtn />
           <Button
@@ -225,7 +227,7 @@ const Documents = () => {
             }}
             loading={deleteAllDocumentByIdLoading}
           >
-            批量删除
+            {t("list.bulkDelete")}
           </Button>
         </div>
       </div>
@@ -248,7 +250,7 @@ const Documents = () => {
             pageSizeOptions: ["10", "20", "50"],
             showSizeChanger: true,
             showQuickJumper: true,
-            showTotal: (total) => `共 ${total} 条数据`,
+            showTotal: (total) => t("list.total", { count: total }),
           }}
           rowSelection={{
             selectedRowKeys,

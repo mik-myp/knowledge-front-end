@@ -6,6 +6,7 @@ import { SearchOutlined } from "@ant-design/icons"
 import { useDebounce, useRequest } from "ahooks"
 import { Empty, Input, Modal, Spin } from "antd"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 /**
  * 渲染知识库Select弹窗组件。
@@ -20,6 +21,7 @@ const KnowledgeSelectModal = ({
   onCancel,
   onConfirm,
 }: TKnowledgeSelectModalProps) => {
+  const { t } = useTranslation("chat")
   const [searchValue, setSearchValue] = useState("")
   const [selectedKnowledge, setSelectedKnowledge] = useState<
     TKnowledgeBaseRecord | undefined
@@ -49,7 +51,7 @@ const KnowledgeSelectModal = ({
     <Modal
       open={open}
       onCancel={onCancel}
-      title="新建会话"
+      title={t("knowledgeSelect.title")}
       width={700}
       centered
       afterClose={() => {
@@ -60,13 +62,13 @@ const KnowledgeSelectModal = ({
     >
       <div>
         <div className="mb-4 flex flex-col gap-2 text-sm text-black/45">
-          <div>选择知识库：创建知识库会话</div>
-          <div>不选择知识库：创建普通会话</div>
+          <div>{t("knowledgeSelect.withKnowledge")}</div>
+          <div>{t("knowledgeSelect.withoutKnowledge")}</div>
         </div>
         <Input
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}
-          placeholder="搜索并选择知识库后创建新会话"
+          placeholder={t("knowledgeSelect.searchPlaceholder")}
           prefix={<SearchOutlined />}
           disabled={loading}
         />

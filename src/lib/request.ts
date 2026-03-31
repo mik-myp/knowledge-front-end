@@ -4,6 +4,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios"
 import { notification } from "@/lib/antdNotification"
+import i18n from "@/lib/i18n"
 import type { TokenPairResult } from "@/types/user"
 
 /**
@@ -21,16 +22,16 @@ export interface ApiResponse<T = unknown> {
  * 维护常见 HTTP 状态码与默认提示文案的映射关系。
  */
 const statusMessageMap: Record<number, string> = {
-  400: "请求参数错误",
-  401: "未授权，请重新登录",
-  403: "拒绝访问",
-  404: "请求资源不存在",
-  408: "请求超时",
-  500: "服务器开小差了，请稍后重试",
-  501: "服务暂未实现",
-  502: "网关错误",
-  503: "服务暂不可用",
-  504: "网关超时",
+  400: "request:status.400",
+  401: "request:status.401",
+  403: "request:status.403",
+  404: "request:status.404",
+  408: "request:status.408",
+  500: "request:status.500",
+  501: "request:status.501",
+  502: "request:status.502",
+  503: "request:status.503",
+  504: "request:status.504",
 }
 
 /**
@@ -125,12 +126,14 @@ const redirectToLogin = () => {
  */
 const createResponseError = (code?: number, message?: string) => {
   const errorMessage =
-    (typeof code === "number" ? statusMessageMap[code] : undefined) ||
+    (typeof code === "number" && statusMessageMap[code]
+      ? i18n.t(statusMessageMap[code])
+      : undefined) ||
     message?.trim() ||
-    "请求失败"
+    i18n.t("errors.requestFailed", { ns: "request" })
 
   notification.error({
-    title: "请求失败",
+    title: i18n.t("notifications.requestFailedTitle", { ns: "request" }),
     description: errorMessage,
   })
 
@@ -165,7 +168,7 @@ async function refreshToken(): Promise<AuthTokenPair> {
   const savedRefreshToken = getRefreshToken()
 
   if (!savedRefreshToken) {
-    throw new Error("未授权，请重新登录")
+    throw new Error(i18n.t("errors.authRequired", { ns: "request" }))
   }
 
   const response = await axios.post<ApiResponse<TokenPairResult>>(
@@ -188,7 +191,10 @@ async function refreshToken(): Promise<AuthTokenPair> {
     !tokenPair?.accessToken ||
     !tokenPair.refreshToken
   ) {
-    throw new Error(response.data.message?.trim() || "刷新登录状态失败")
+    throw new Error(
+      response.data.message?.trim() ||
+        i18n.t("errors.refreshFailed", { ns: "request" })
+    )
   }
 
   const nextTokens = {
@@ -212,7 +218,9 @@ const refreshAuthSession = async (): Promise<AuthTokenPair> => {
         return await refreshToken()
       } catch (error) {
         throw createAuthError(
-          error instanceof Error ? error.message : "刷新登录状态失败"
+          error instanceof Error
+            ? error.message
+            : i18n.t("errors.refreshFailed", { ns: "request" })
         )
       } finally {
         refreshPromise = null
@@ -243,7 +251,7 @@ service.interceptors.request.use(
   },
   (error: AxiosError) => {
     notification.error({
-      title: "请求发送失败",
+      title: i18n.t("errors.requestSendFailed", { ns: "request" }),
       description: error.message,
     })
 
@@ -348,14 +356,14 @@ export const authorizedFetch = async (
   }
 
   if (typeof input === "string" && input.includes("/users/refresh")) {
-    throw createAuthError("未授权，请重新登录")
+    throw createAuthError(i18n.t("errors.authRequired", { ns: "request" }))
   }
 
   const { accessToken } = await refreshAuthSession()
   const retryResponse = await executeRequest(accessToken)
 
   if (retryResponse.status === 401) {
-    throw createAuthError("未授权，请重新登录")
+    throw createAuthError(i18n.t("errors.authRequired", { ns: "request" }))
   }
 
   return retryResponse

@@ -1,0 +1,79 @@
+{
+  "upload": {
+    "button": "Upload files",
+    "helper": "Select a knowledge base and upload files",
+    "modalTitle": "Upload files",
+    "errors": {
+      "fileTooLarge": "Each file must be smaller than 5 MB",
+      "unsupportedFile": "Only md, pdf, txt, and docx files are supported"
+    },
+    "form": {
+      "file": {
+        "label": "File",
+        "required": "Please upload at least one file"
+      },
+      "knowledgeBase": {
+        "label": "Knowledge base",
+        "required": "Please select a knowledge base"
+      }
+    },
+    "dragger": {
+      "hint": "Only md, pdf, txt, and docx are supported. Each file must be smaller than 5 MB",
+      "text": "Click or drag files to this area to upload"
+    }
+  },
+  "list": {
+    "actions": "Actions",
+    "bulkDelete": "Delete selected",
+    "createdAt": "Created at",
+    "extension": "Extension",
+    "fileName": "File name",
+    "fileSize": "File size",
+    "fileType": "File type",
+    "indexStatus": "Index status",
+    "knowledgeBase": "Knowledge base",
+    "refresh": "Refresh",
+    "total": "Total {{count}} items",
+    "updatedAt": "Updated at",
+    "deleteConfirm": "Are you sure you want to delete this document?"
+  },
+  "detail": {
+    "description": "Document detail preview. You can view the content here and download the original file.",
+    "downloadOriginal": "Download original file",
+    "indexFailed": "Index failed",
+    "notFound": "The document does not exist or failed to load",
+    "unsupportedPreview": "Preview is not available for {{extension}} files"
+  },
+  "preview": {
+    "docxEmpty": "No DOCX content is available for preview",
+    "docxFailed": "Failed to parse DOCX",
+    "pdfEmpty": "No PDF content is available for preview",
+    "pdfFailed": "Failed to load PDF",
+    "pdfLoading": "Loading PDF...",
+    "pdfNext": "Next page",
+    "pdfPage": "Page {{current}}{{total}}",
+    "pdfPrev": "Previous page"
+  },
+  "sourceType": {
+    "editor": "Editor",
+    "upload": "Upload"
+  },
+  "indexStatusMeta": {
+    "completed": {
+      "hint": "Indexing is complete. This document can be retrieved in searches.",
+      "label": "Completed"
+    },
+    "failed": {
+      "hint": "Indexing failed. This document will not appear in search results.",
+      "label": "Failed"
+    },
+    "indexing": {
+      "hint": "The document is being processed and may not be searchable yet.",
+      "label": "Indexing"
+    },
+    "pending": {
+      "hint": "The document is stored and waiting to be indexed.",
+      "label": "Pending"
+    }
+  }
+}

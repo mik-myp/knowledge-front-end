@@ -1,0 +1,32 @@
+{
+  "actions": {
+    "back": "返回",
+    "cancel": "取消",
+    "confirm": "确认",
+    "continue": "继续",
+    "create": "创建",
+    "delete": "删除",
+    "download": "下载",
+    "edit": "编辑",
+    "logout": "登出",
+    "refresh": "刷新",
+    "save": "保存",
+    "upload": "上传",
+    "viewAll": "查看全部",
+    "viewDetails": "查看详情"
+  },
+  "labels": {
+    "conversation": "会话",
+    "description": "描述",
+    "file": "文件",
+    "files": "文件",
+    "home": "首页",
+    "knowledgeBase": "知识库",
+    "name": "名称"
+  },
+  "states": {
+    "completed": "已完成",
+    "loading": "加载中...",
+    "pending": "待完成"
+  }
+}

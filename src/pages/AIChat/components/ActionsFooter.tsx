@@ -3,12 +3,14 @@ import type { TChatListMessageItem } from "@/types/ai-chat"
 import { Actions, type ActionsProps } from "@ant-design/x"
 import { Drawer } from "antd"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 const ActionsFooter = ({
   messageItem,
 }: {
   messageItem: TChatListMessageItem
 }) => {
+  const { t } = useTranslation("chat")
   const [open, setOpen] = useState(false)
   const [childOpen, setChildOpen] = useState(false)
   const [sourceContent, setSourceContent] = useState("")
@@ -21,7 +23,7 @@ const ActionsFooter = ({
   if (canCopy) {
     actionItems.push({
       key: "copy",
-      label: "复制",
+      label: t("list.copy"),
       actionRender: () => {
         return <Actions.Copy text={messageItem.message.content} />
       },
@@ -37,7 +39,7 @@ const ActionsFooter = ({
             className="h-full cursor-pointer text-black/45"
             onClick={() => setOpen(true)}
           >
-            参考 {sources.length} 个资料
+            {t("list.sources", { count: sources.length })}
           </div>
         )
       },
@@ -57,7 +59,7 @@ const ActionsFooter = ({
           setOpen(false)
           setChildOpen(false)
         }}
-        title="参考资料"
+        title={t("list.sourcesTitle")}
         closable={{ placement: "end" }}
         classNames={{
           body: "p-5 pr-1 scrollbar-thin",
@@ -86,7 +88,7 @@ const ActionsFooter = ({
           })}
         </div>
         <Drawer
-          title="参考资料内容"
+          title={t("list.sourcesContentTitle")}
           onClose={() => setChildOpen(false)}
           open={childOpen}
           closable={{ placement: "end" }}

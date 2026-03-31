@@ -1,0 +1,10 @@
+{
+  "nav": {
+    "aiChat": "AI Chat",
+    "aiWrite": "AI Writing",
+    "documents": "Documents"
+  },
+  "userMenu": {
+    "logout": "Log out"
+  }
+}

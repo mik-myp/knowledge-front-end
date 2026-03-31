@@ -1,0 +1,69 @@
+{
+  "defaults": {
+    "generalConversation": "普通会话",
+    "knowledgeConversation": "{{name}} 会话"
+  },
+  "reuse": {
+    "general": "已存在待开始的普通会话，已切换过去",
+    "knowledge": "已存在知识库「{{name}}」的待开始会话，已切换过去"
+  },
+  "errors": {
+    "abort": "已停止生成回答",
+    "failed": "本次问答处理失败，请稍后重试",
+    "retrievalTimeout": "知识库检索超时，请稍后重试",
+    "serviceUnavailable": "知识库服务暂时不可用，请稍后重试",
+    "selectConversation": "请先选择会话"
+  },
+  "group": {
+    "draft": "待开始",
+    "today": "今天",
+    "yesterday": "昨天"
+  },
+  "placeholder": {
+    "thinking": "正在思考中..."
+  },
+  "centeredComposer": {
+    "general": {
+      "description": "你可以直接提问，也可以在左侧新建知识库会话后开始问答。",
+      "title": "开启新对话"
+    },
+    "knowledge": {
+      "description": "当前会话将关联知识库「{{name}}」，发送首条消息后才会真正创建会话。",
+      "title": "开启知识库对话"
+    }
+  },
+  "list": {
+    "copy": "复制",
+    "sources": "参考 {{count}} 个资料",
+    "sources_other": "参考 {{count}} 个资料",
+    "sourcesTitle": "参考资料",
+    "sourcesContentTitle": "参考资料内容",
+    "thinking": "正在生成回答"
+  },
+  "side": {
+    "draftTag": "待发送",
+    "home": "首页",
+    "knowledgeTag": "知识库",
+    "newConversation": "新建会话",
+    "newConversationLabel": "开始新的会话",
+    "delete": {
+      "content": "删除后将同时清空该会话下的消息记录，是否继续？",
+      "title": "删除会话"
+    },
+    "menu": {
+      "delete": "删除会话",
+      "rename": "重命名"
+    },
+    "rename": {
+      "placeholder": "请输入新的会话标题",
+      "range": "会话标题不能为空，并且长度不能超过 50 个字符",
+      "title": "重命名会话"
+    }
+  },
+  "knowledgeSelect": {
+    "title": "新建会话",
+    "withKnowledge": "选择知识库：创建知识库会话",
+    "withoutKnowledge": "不选择知识库：创建普通会话",
+    "searchPlaceholder": "搜索并选择知识库后创建新会话"
+  }
+}

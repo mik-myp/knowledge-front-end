@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import { Sparkles } from "lucide-react"
 import { Link } from "react-router"
+import { useTranslation } from "react-i18next"
 
 import EyeBall from "./EyeBall"
 import Pupil from "./Pupil"
@@ -55,6 +56,7 @@ const AuthPageShell = ({
   password = "",
   isTyping = false,
 }: AuthPageShellProps) => {
+  const { t } = useTranslation("auth")
   const [isPurpleBlinking, setIsPurpleBlinking] = useState(false)
   const [isBlackBlinking, setIsBlackBlinking] = useState(false)
   const [isLookingAtEachOther, setIsLookingAtEachOther] = useState(false)
@@ -231,7 +233,7 @@ const AuthPageShell = ({
             </div>
             <div>
               <div className="text-sm font-medium tracking-[0.28em] text-white/70 uppercase">
-                Knowledge Base
+                {t("brand.name")}
               </div>
             </div>
           </div>

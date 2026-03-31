@@ -1,0 +1,40 @@
+{
+  "sidebar": {
+    "sectionTitle": "Knowledge bases",
+    "menu": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "delete": {
+      "content": "Are you sure you want to delete this knowledge base?",
+      "title": "Delete knowledge base"
+    },
+    "modal": {
+      "createTitle": "Create knowledge base",
+      "editTitle": "Edit knowledge base"
+    },
+    "form": {
+      "description": {
+        "label": "Description",
+        "max": "Description must be no longer than 500 characters"
+      },
+      "name": {
+        "label": "Name",
+        "range": "Name is required and must be no longer than 100 characters"
+      }
+    }
+  },
+  "detail": {
+    "description": "Description",
+    "deleteConfirm": "Are you sure you want to delete this document?",
+    "empty": "No documents yet",
+    "fileSize": "File size",
+    "fileSource": "File source",
+    "indexStatus": "Index status",
+    "loadedAll": "All documents have been loaded"
+  },
+  "sourceType": {
+    "editor": "Editor",
+    "upload": "Upload"
+  }
+}

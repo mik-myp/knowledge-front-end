@@ -7,6 +7,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css"
 import "react-pdf/dist/Page/TextLayer.css"
 import { Button, Empty, Flex, Spin, Typography } from "antd"
 import { fetchDocumentFile } from "@/services/document"
+import { useTranslation } from "react-i18next"
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker
 
@@ -26,6 +27,7 @@ type PdfPreviewProps = {
  * @returns 返回组件渲染结果。
  */
 const PdfPreview = ({ documentId }: PdfPreviewProps) => {
+  const { t } = useTranslation("document")
   const previewRef = useRef<HTMLDivElement>(null)
   const previewSize = useSize(previewRef)
   const [previewUrl, setPreviewUrl] = useState<string>()
@@ -79,11 +81,11 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
   }
 
   if (loadFailed) {
-    return <Empty description="PDF 加载失败" />
+    return <Empty description={t("preview.pdfFailed")} />
   }
 
   if (!previewUrl) {
-    return <Empty description="PDF 暂无可预览内容" />
+    return <Empty description={t("preview.pdfEmpty")} />
   }
 
   const pageWidth = Math.max((previewSize?.width ?? 960) - 48, 320)
@@ -95,9 +97,9 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
           <Button
             icon={<LeftOutlined />}
             disabled={currentPage <= 1}
-            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-          >
-            上一页
+          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+        >
+            {t("preview.pdfPrev")}
           </Button>
           <Button
             icon={<RightOutlined />}
@@ -109,11 +111,14 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
               )
             }
           >
-            下一页
+            {t("preview.pdfNext")}
           </Button>
         </Flex>
         <Text type="secondary">
-          第 {currentPage} 页{pageCount > 0 ? ` / 共 ${pageCount} 页` : ""}
+          {t("preview.pdfPage", {
+            current: currentPage,
+            total: pageCount > 0 ? ` / ${pageCount}` : "",
+          })}
         </Text>
       </Flex>
 
@@ -124,7 +129,7 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
         <Document
           key={previewUrl}
           file={previewUrl}
-          loading="PDF 加载中..."
+          loading={t("preview.pdfLoading")}
           onLoadSuccess={({ numPages }) => {
             setPageCount(numPages)
             setCurrentPage(1)

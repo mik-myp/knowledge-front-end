@@ -1,0 +1,80 @@
+{
+  "upload": {
+    "button": "上传文件",
+    "helper": "请选择知识库并上传文件",
+    "modalTitle": "上传文件",
+    "errors": {
+      "fileTooLarge": "单个文件大小不能超过 5MB",
+      "unsupportedFile": "仅支持上传 md、pdf、txt、docx 文件"
+    },
+    "form": {
+      "file": {
+        "label": "文件",
+        "required": "请上传文件"
+      },
+      "knowledgeBase": {
+        "label": "知识库",
+        "required": "请选择知识库"
+      }
+    },
+    "dragger": {
+      "hint": "仅支持 md、pdf、txt、docx，单个文件不超过 5MB",
+      "text": "单击或拖动文件到此区域进行上传"
+    }
+  },
+  "list": {
+    "actions": "操作",
+    "bulkDelete": "批量删除",
+    "createdAt": "创建时间",
+    "extension": "文件扩展名",
+    "fileName": "文件名",
+    "fileSize": "文件大小",
+    "fileType": "文件类型",
+    "indexStatus": "索引状态",
+    "knowledgeBase": "所属知识库",
+    "refresh": "刷新",
+    "total": "共 {{count}} 条数据",
+    "total_other": "共 {{count}} 条数据",
+    "updatedAt": "更新时间",
+    "deleteConfirm": "确定要删除吗？"
+  },
+  "detail": {
+    "description": "文档详情预览页，支持直接查看内容并下载原文件。",
+    "downloadOriginal": "下载原文件",
+    "indexFailed": "索引失败",
+    "notFound": "文档不存在或加载失败",
+    "unsupportedPreview": "暂不支持预览 {{extension}} 文件"
+  },
+  "preview": {
+    "docxEmpty": "DOCX 暂无可预览内容",
+    "docxFailed": "DOCX 解析失败",
+    "pdfEmpty": "PDF 暂无可预览内容",
+    "pdfFailed": "PDF 加载失败",
+    "pdfLoading": "PDF 加载中...",
+    "pdfNext": "下一页",
+    "pdfPage": "第 {{current}} 页{{total}}",
+    "pdfPrev": "上一页"
+  },
+  "sourceType": {
+    "editor": "编辑器",
+    "upload": "上传"
+  },
+  "indexStatusMeta": {
+    "completed": {
+      "hint": "索引已完成，文档可参与检索。",
+      "label": "已完成"
+    },
+    "failed": {
+      "hint": "索引失败，当前文档不会出现在检索结果中。",
+      "label": "失败"
+    },
+    "indexing": {
+      "hint": "正在处理文档内容，暂时可能无法检索。",
+      "label": "索引中"
+    },
+    "pending": {
+      "hint": "文档已入库，等待开始索引。",
+      "label": "待索引"
+    }
+  }
+}

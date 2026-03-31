@@ -5,6 +5,7 @@ import { LogoutOutlined } from "@ant-design/icons"
 import { useRequest } from "ahooks"
 import { Avatar, Dropdown, Skeleton, type MenuProps } from "antd"
 import { useNavigate } from "react-router"
+import { useTranslation } from "react-i18next"
 
 /**
  * 表示下拉菜单项的类型。
@@ -14,25 +15,25 @@ type MenuItem = Required<MenuProps>["items"][number]
 /**
  * 用户头像下拉菜单的选项列表。
  */
-const items: MenuItem[] = [
-  {
-    type: "divider",
-  },
-  {
-    key: "logout",
-    label: "登出",
-    icon: <LogoutOutlined />,
-    danger: true,
-  },
-]
-
 /**
  * 渲染用户Info组件。
  * @returns 返回组件渲染结果。
  */
 const UserInfo = () => {
+  const { t } = useTranslation("layout")
   const { setUser } = useUser()
   const navigate = useNavigate()
+  const items: MenuItem[] = [
+    {
+      type: "divider",
+    },
+    {
+      key: "logout",
+      label: t("userMenu.logout"),
+      icon: <LogoutOutlined />,
+      danger: true,
+    },
+  ]
 
   const { data: user, loading } = useRequest(userMe, {
     onSuccess: (data) => setUser(data),

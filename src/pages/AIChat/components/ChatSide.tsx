@@ -10,6 +10,7 @@ import { Conversations } from "@ant-design/x"
 import { App, Button, Form, Input, Modal, Spin, theme } from "antd"
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import { useTranslation } from "react-i18next"
 import KnowledgeSelectModal from "./KnowledgeSelectModal"
 
 /**
@@ -20,13 +21,17 @@ import KnowledgeSelectModal from "./KnowledgeSelectModal"
  */
 const renderConversationLabel = (
   conversation: TChatSideProps["conversations"][number],
+  text: {
+    draftTag: string
+    knowledgeTag: string
+  },
   titleColor?: string
 ) => {
   return (
     <div className="flex min-w-0 items-center gap-2">
       {conversation.knowledgeBaseId ? (
         <span className="shrink-0 rounded-full bg-sky-500/10 px-2 py-0.5 text-[11px] font-medium tracking-[0.02em] text-sky-700">
-          知识库
+          {text.knowledgeTag}
         </span>
       ) : null}
       <span
@@ -37,7 +42,7 @@ const renderConversationLabel = (
       </span>
       {conversation.isDraft ? (
         <span className="shrink-0 rounded-full bg-amber-500/12 px-2 py-0.5 text-[11px] font-medium tracking-[0.02em] text-amber-700">
-          待发送
+          {text.draftTag}
         </span>
       ) : null}
     </div>
@@ -67,6 +72,7 @@ const ChatSide = ({
   updatingConversation,
   loading,
 }: TChatSideProps) => {
+  const { t } = useTranslation("chat")
   const { modal } = App.useApp()
   const {
     token: { colorPrimary, colorPrimaryBg, colorSplit, lineType, lineWidth },
@@ -91,7 +97,7 @@ const ChatSide = ({
         <span
           style={isNewConversationActive ? { color: colorPrimary } : undefined}
         >
-          开始新的会话
+          {t("side.newConversationLabel")}
         </span>
       ),
       icon: <OpenAIOutlined />,
@@ -104,6 +110,10 @@ const ChatSide = ({
         ...conversation,
         label: renderConversationLabel(
           conversation,
+          {
+            draftTag: t("side.draftTag"),
+            knowledgeTag: t("side.knowledgeTag"),
+          },
           isActive ? colorPrimary : undefined
         ),
         style: isActive ? activeConversationStyle : undefined,
@@ -143,7 +153,7 @@ const ChatSide = ({
         type="primary"
         onClick={() => navigate("/")}
       >
-        首页
+        {t("side.home")}
       </Button>
       <div className="min-h-0 flex-1 overflow-hidden">
         <Spin spinning={loading} className="block h-full">
@@ -157,7 +167,7 @@ const ChatSide = ({
             items={conversationItems}
             creation={{
               onClick: () => setOpen(true),
-              label: "新建会话",
+              label: t("side.newConversation"),
             }}
             activeKey={activeConversationKey}
             onActiveChange={setActiveConversationKey}
@@ -169,7 +179,7 @@ const ChatSide = ({
                 items: [
                   {
                     key: "rename",
-                    label: "重命名",
+                    label: t("side.menu.rename"),
                     icon: <EditOutlined />,
                     onClick: () => {
                       setRenameConversationId(String(conversation.key))
@@ -181,20 +191,19 @@ const ChatSide = ({
                   },
                   {
                     key: "delete",
-                    label: "删除会话",
+                    label: t("side.menu.delete"),
                     icon: <DeleteOutlined />,
                     danger: true,
                     onClick: () => {
                       modal.confirm({
-                        title: "删除会话",
+                        title: t("side.delete.title"),
                         icon: <ExclamationCircleFilled />,
-                        content:
-                          "删除后将同时清空该会话下的消息记录，是否继续？",
-                        okText: "删除",
+                        content: t("side.delete.content"),
+                        okText: t("common:actions.delete"),
                         okButtonProps: {
                           danger: true,
                         },
-                        cancelText: "取消",
+                        cancelText: t("common:actions.cancel"),
                         onOk: async () => {
                           await onRemoveConversation(String(conversation.key))
                         },
@@ -214,7 +223,7 @@ const ChatSide = ({
       />
       <Modal
         open={renameOpen}
-        title="重命名会话"
+        title={t("side.rename.title")}
         onCancel={closeRenameModal}
         onOk={() => {
           renameForm.submit()
@@ -231,11 +240,11 @@ const ChatSide = ({
                 min: 1,
                 max: 50,
                 type: "string",
-                message: "会话标题不能为空，并且长度不能超过 50 个字符",
+                message: t("side.rename.range"),
               },
             ]}
           >
-            <Input placeholder="请输入新的会话标题" maxLength={50} />
+            <Input placeholder={t("side.rename.placeholder")} maxLength={50} />
           </Form.Item>
         </Form>
       </Modal>

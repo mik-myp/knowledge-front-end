@@ -6,6 +6,7 @@ import { App, Button, Form, Modal, Select, Spin, Upload } from "antd"
 import { InboxOutlined, UploadOutlined } from "@ant-design/icons"
 import type { UploadChangeParam, UploadFile } from "antd/es/upload"
 import useDocumentsVersion from "@/stores/useDocumentsVersion"
+import { useTranslation } from "react-i18next"
 
 const { Dragger } = Upload
 const uploadAccept = ".md,.pdf,.txt,.docx"
@@ -24,6 +25,7 @@ const UploadBtn = ({
   knowledgeId?: string
   className?: string
 }) => {
+  const { t } = useTranslation("document")
   const [modalOpen, setModalOpen] = useState(false)
   const { message } = App.useApp()
 
@@ -95,12 +97,12 @@ const UploadBtn = ({
       lowerCaseName.endsWith(".docx")
 
     if (!isSupportedFile) {
-      message.error("仅支持上传 md、pdf、txt、docx 文件")
+      message.error(t("upload.errors.unsupportedFile"))
       return Upload.LIST_IGNORE
     }
 
     if (file.size > maxUploadFileSize) {
-      message.error("单个文件大小不能超过 5MB")
+      message.error(t("upload.errors.fileTooLarge"))
       return Upload.LIST_IGNORE
     }
 
@@ -115,12 +117,12 @@ const UploadBtn = ({
         onClick={() => handleModalOpenChange(true)}
         className={className}
       >
-        上传文件
+        {t("upload.button")}
       </Button>
       <Modal
         open={modalOpen}
         onCancel={() => handleModalOpenChange(false)}
-        title="上传文件"
+        title={t("upload.modalTitle")}
         onOk={handleOk}
         confirmLoading={documentsUploadLoading}
         destroyOnHidden
@@ -129,7 +131,7 @@ const UploadBtn = ({
         centered
       >
         <div className="text-sm text-black/80">
-          {knowledgeId ? "" : "请选择知识库并上传文件"}
+          {knowledgeId ? "" : t("upload.helper")}
         </div>
         <Form
           form={form}
@@ -146,11 +148,11 @@ const UploadBtn = ({
         >
           <Form.Item
             name="knowledgeId"
-            label="知识库"
+            label={t("upload.form.knowledgeBase.label")}
             rules={[
               {
                 required: !knowledgeId,
-                message: "请选择知识库",
+                message: t("upload.form.knowledgeBase.required"),
               },
             ]}
             hidden={!!knowledgeId}
@@ -174,11 +176,11 @@ const UploadBtn = ({
           </Form.Item>
           <Form.Item
             name="files"
-            label="文件"
+            label={t("upload.form.file.label")}
             rules={[
               {
                 required: true,
-                message: "请上传文件",
+                message: t("upload.form.file.required"),
               },
             ]}
             valuePropName="fileList"
@@ -193,10 +195,8 @@ const UploadBtn = ({
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
-              <p className="ant-upload-text">单击或拖动文件到此区域进行上传</p>
-              <p className="ant-upload-hint">
-                仅支持 md、pdf、txt、docx，单个文件不超过 5MB
-              </p>
+              <p className="ant-upload-text">{t("upload.dragger.text")}</p>
+              <p className="ant-upload-hint">{t("upload.dragger.hint")}</p>
             </Dragger>
           </Form.Item>
         </Form>

@@ -1,0 +1,86 @@
+{
+  "greeting": {
+    "afternoon": "Good afternoon",
+    "evening": "Good evening",
+    "morning": "Good morning"
+  },
+  "summary": {
+    "full": "The workspace is fully set up. You can keep expanding the knowledge base or jump back into AI chat for deeper questions.",
+    "none": "Start with the three essentials: knowledge bases, documents, and conversations to get the workspace moving.",
+    "one": "The foundation is ready. Add documents or conversations next to make the home page more useful.",
+    "two": "Only one step remains before the full workflow is complete. This is a good time to start building conversation history."
+  },
+  "hero": {
+    "description": "The knowledge workspace is ready for the next step.",
+    "enterAiChat": "Open AI chat",
+    "refresh": "Refresh home",
+    "titleWithUser": "{{greeting}}, {{username}}.",
+    "titleWithoutUser": "{{greeting}}.",
+    "viewDocuments": "View documents"
+  },
+  "progress": {
+    "eyebrow": "Workflow progress",
+    "knowledge": {
+      "done": "You already have {{count}} knowledge bases",
+      "title": "Create a knowledge base",
+      "todo": "Create a topic entry first. Documents and conversations will build around it."
+    },
+    "document": {
+      "done": "You already have {{count}} documents",
+      "title": "Import documents",
+      "todo": "Upload PDFs, Markdown files, or plain text so the knowledge base has searchable content."
+    },
+    "conversation": {
+      "done": "You already have {{count}} conversations",
+      "title": "Start asking questions",
+      "todo": "Start your first conversation so the documents move into real usage."
+    }
+  },
+  "stats": {
+    "knowledge": {
+      "caption": "Used to organize topics, documents, and Q&A scope.",
+      "label": "Knowledge bases"
+    },
+    "document": {
+      "caption": "The home page shows the latest 6. Manage the rest on the documents page.",
+      "label": "Documents"
+    },
+    "conversation": {
+      "caption": "Includes both general chats and knowledge-base-linked conversations.",
+      "label": "AI conversations"
+    },
+    "readiness": {
+      "caption": "Completed {{completed}} / 3 key setup steps.",
+      "label": "Workspace progress"
+    }
+  },
+  "recentDocuments": {
+    "button": "View all",
+    "collectedAt": "Collected at {{time}}",
+    "empty": "No documents yet. Upload one to get started.",
+    "eyebrow": "Recent documents",
+    "title": "Recently imported knowledge"
+  },
+  "recentSessions": {
+    "button": "Open chat",
+    "empty": "No Q&A records yet. Start your first conversation.",
+    "eyebrow": "Recent conversations",
+    "generalConversation": "General conversation",
+    "knowledgeConversation": "Knowledge conversation",
+    "title": "AI conversation timeline"
+  },
+  "knowledgeBases": {
+    "button": "Keep building",
+    "defaultDescription": "No description yet. Consider explaining what this knowledge base is meant to solve.",
+    "empty": "No knowledge base yet. Create a topic container first.",
+    "eyebrow": "Knowledge base list",
+    "title": "Current content structure"
+  },
+  "sourceType": {
+    "editor": "Editor document",
+    "upload": "Uploaded document"
+  },
+  "fallback": {
+    "enteredWorkspace": "Just entered the workspace"
+  }
+}

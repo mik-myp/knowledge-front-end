@@ -8,6 +8,7 @@ import {
   findDocumentById,
 } from "@/services/document"
 import { formatFileSize, getDocumentIndexStatusMeta } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 const { Paragraph, Title } = Typography
 
@@ -51,6 +52,7 @@ const previewFallback = (
  * @returns 返回组件渲染结果。
  */
 const DocumentDetail = () => {
+  const { t } = useTranslation("document")
   const { id } = useParams()
 
   const { data, loading, run } = useRequest(findDocumentById, {
@@ -77,7 +79,7 @@ const DocumentDetail = () => {
   }
 
   if (!data) {
-    return <Empty description="文档不存在或加载失败" />
+    return <Empty description={t("detail.notFound")} />
   }
 
   const extension = data.extension.toLowerCase()
@@ -86,7 +88,11 @@ const DocumentDetail = () => {
   const renderPreview = () => {
     if (!supportedPreviewExtensions.has(extension)) {
       return (
-        <Empty description={`暂不支持预览 ${extension.toUpperCase()} 文件`} />
+        <Empty
+          description={t("detail.unsupportedPreview", {
+            extension: extension.toUpperCase(),
+          })}
+        />
       )
     }
 
@@ -130,13 +136,13 @@ const DocumentDetail = () => {
               {data.originalName}
             </Title>
             <Paragraph type="secondary" className="mb-3!">
-              文档详情预览页，支持直接查看内容并下载原文件。
+              {t("detail.description")}
             </Paragraph>
             <Flex gap={8} wrap>
               <Tag color={indexStatusMeta.color}>{indexStatusMeta.label}</Tag>
               <Tag>{extension.toUpperCase()}</Tag>
               <Tag>{data.mimeType}</Tag>
-              <Tag>{data.sourceType}</Tag>
+              <Tag>{t(`sourceType.${data.sourceType}`)}</Tag>
               <Tag>{formatFileSize(data.size)}</Tag>
             </Flex>
           </div>
@@ -154,7 +160,7 @@ const DocumentDetail = () => {
               })
             }
           >
-            下载原文件
+            {t("detail.downloadOriginal")}
           </Button>
         </div>
 
@@ -163,7 +169,7 @@ const DocumentDetail = () => {
             className="mb-4"
             type="error"
             showIcon
-            title="索引失败"
+            title={t("detail.indexFailed")}
             description={data.indexingError}
           />
         ) : null}

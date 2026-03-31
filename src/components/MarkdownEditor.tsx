@@ -36,9 +36,11 @@ import {
   type EditorInFocus,
   DirectiveNode,
 } from "@mdxeditor/editor"
+import i18n from "@/lib/i18n"
+import { useGlobal } from "@/stores/useGlobal"
+import { useTranslation } from "react-i18next"
 
 const codeBlockLanguages = {
-  "": "未指定",
   txt: "Plain Text",
   text: "Text",
   plaintext: "Plain Text",
@@ -105,8 +107,16 @@ const MarkdownEditor = ({
   markdown: string
   onChange: (markdown: string, initialMarkdownNormalize: boolean) => void
 }) => {
+  const language = useGlobal((state) => state.language)
+  const { t } = useTranslation("editor")
+  const localizedCodeBlockLanguages = {
+    "": t("codeBlockLanguages.unspecified"),
+    ...codeBlockLanguages,
+  } as const
+
   return (
     <MDXEditor
+      key={language}
       markdown={markdown}
       onChange={onChange}
       plugins={[
@@ -120,7 +130,7 @@ const MarkdownEditor = ({
         frontmatterPlugin(),
         codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
         codeMirrorPlugin({
-          codeBlockLanguages,
+          codeBlockLanguages: localizedCodeBlockLanguages,
         }),
         directivesPlugin({
           directiveDescriptors: [AdmonitionDirectiveDescriptor],
@@ -202,6 +212,14 @@ const MarkdownEditor = ({
           ),
         }),
       ]}
+      translation={(key, defaultValue, interpolations): string => {
+        return i18n.t(key, {
+          lng: language,
+          ns: "editor",
+          defaultValue,
+          ...(interpolations ?? {}),
+        })
+      }}
     />
   )
 }

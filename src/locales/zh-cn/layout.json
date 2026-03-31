@@ -1,0 +1,10 @@
+{
+  "nav": {
+    "aiChat": "AI 对话",
+    "aiWrite": "AI 写作",
+    "documents": "文档"
+  },
+  "userMenu": {
+    "logout": "登出"
+  }
+}

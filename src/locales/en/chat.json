@@ -1,0 +1,68 @@
+{
+  "defaults": {
+    "generalConversation": "General conversation",
+    "knowledgeConversation": "{{name}} conversation"
+  },
+  "reuse": {
+    "general": "A general draft conversation already exists. Switched to it.",
+    "knowledge": "A draft conversation for knowledge base \"{{name}}\" already exists. Switched to it."
+  },
+  "errors": {
+    "abort": "Stopped generating the answer",
+    "failed": "This question failed. Please try again later",
+    "retrievalTimeout": "Knowledge retrieval timed out. Please try again later",
+    "serviceUnavailable": "Knowledge service is temporarily unavailable. Please try again later",
+    "selectConversation": "Please select a conversation first"
+  },
+  "group": {
+    "draft": "Pending start",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "placeholder": {
+    "thinking": "Thinking..."
+  },
+  "centeredComposer": {
+    "general": {
+      "description": "Ask directly, or create a knowledge-base conversation from the left before you start.",
+      "title": "Start a new chat"
+    },
+    "knowledge": {
+      "description": "This conversation will be linked to knowledge base \"{{name}}\". The session will only be created after you send the first message.",
+      "title": "Start a knowledge-base chat"
+    }
+  },
+  "list": {
+    "copy": "Copy",
+    "sources": "Referenced {{count}} sources",
+    "sourcesTitle": "References",
+    "sourcesContentTitle": "Reference content",
+    "thinking": "Generating an answer"
+  },
+  "side": {
+    "draftTag": "Pending",
+    "home": "Home",
+    "knowledgeTag": "Knowledge base",
+    "newConversation": "New conversation",
+    "newConversationLabel": "Start a new conversation",
+    "delete": {
+      "content": "Deleting this conversation will also remove all of its message history. Continue?",
+      "title": "Delete conversation"
+    },
+    "menu": {
+      "delete": "Delete conversation",
+      "rename": "Rename"
+    },
+    "rename": {
+      "placeholder": "Enter a new conversation title",
+      "range": "Conversation title is required and must be no longer than 50 characters",
+      "title": "Rename conversation"
+    }
+  },
+  "knowledgeSelect": {
+    "title": "New conversation",
+    "withKnowledge": "Select a knowledge base to create a knowledge-base conversation",
+    "withoutKnowledge": "Skip selection to create a general conversation",
+    "searchPlaceholder": "Search and select a knowledge base before creating a new conversation"
+  }
+}

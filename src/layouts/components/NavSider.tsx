@@ -32,6 +32,7 @@ import {
 } from "antd"
 import { useCallback, useMemo, useState, type CSSProperties } from "react"
 import { useLocation, useNavigate } from "react-router"
+import { useTranslation } from "react-i18next"
 
 const { Sider } = Layout
 
@@ -54,35 +55,6 @@ type CSSVariableStyle = CSSProperties &
   >
 
 /**
- * 侧边栏主导航菜单项。
- */
-const items: MenuItem[] = [
-  {
-    key: "/",
-    label: "首页",
-    icon: <HomeOutlined />,
-  },
-  {
-    key: "/documents",
-    label: "文档",
-    icon: <BookOutlined />,
-  },
-  {
-    key: "/ai",
-    label: "AI对话",
-    icon: <RobotOutlined />,
-  },
-  {
-    key: "/ai/write",
-    label: "AI写作",
-    icon: <EditOutlined />,
-  },
-  {
-    type: "divider",
-  },
-]
-
-/**
  * 侧边栏折叠时的固定宽度。
  */
 const collapsedSiderWidth = 80
@@ -102,6 +74,8 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
   const { pathname } = useLocation()
 
   const navigate = useNavigate()
+
+  const { t } = useTranslation(["common", "layout", "knowledge"])
 
   const {
     token: { colorSplit, lineType, lineWidth },
@@ -135,6 +109,35 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
     deleteKnowledgeById,
     { manual: true }
   )
+
+  /**
+   * 侧边栏主导航菜单项。
+   */
+  const items: MenuItem[] = [
+    {
+      key: "/",
+      label: t("labels.home"),
+      icon: <HomeOutlined />,
+    },
+    {
+      key: "/documents",
+      label: t("nav.documents", { ns: "layout" }),
+      icon: <BookOutlined />,
+    },
+    {
+      key: "/ai",
+      label: t("nav.aiChat", { ns: "layout" }),
+      icon: <RobotOutlined />,
+    },
+    {
+      key: "/ai/write",
+      label: t("nav.aiWrite", { ns: "layout" }),
+      icon: <EditOutlined />,
+    },
+    {
+      type: "divider",
+    },
+  ]
 
   const handleDelete = useCallback(
     async (knowledgeId: string) => {
@@ -177,9 +180,9 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
         })
       } else if (key === "delete") {
         modal.confirm({
-          title: "删除知识库",
-          content: "确定要删除该知识库吗？",
-          okText: "删除",
+          title: t("sidebar.delete.title", { ns: "knowledge" }),
+          content: t("sidebar.delete.content", { ns: "knowledge" }),
+          okText: t("actions.delete"),
           onOk: async () => await handleDelete(item.id),
         })
       }
@@ -202,12 +205,12 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
               items: [
                 {
                   key: "edit",
-                  label: "编辑",
+                  label: t("sidebar.menu.edit", { ns: "knowledge" }),
                   icon: <EditOutlined />,
                 },
                 {
                   key: "delete",
-                  label: "删除",
+                  label: t("sidebar.menu.delete", { ns: "knowledge" }),
                   icon: <DeleteOutlined />,
                   danger: true,
                 },
@@ -316,7 +319,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
             "[border-inline-end-style:var(--ant-line-type)]",
             "border-e-(--ant-color-split)"
           )}
-          title="知识库"
+          title={t("sidebar.sectionTitle", { ns: "knowledge" })}
         >
           <div
             className={cn(
@@ -334,7 +337,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
                   : "max-w-24 translate-x-0 opacity-100"
               )}
             >
-              知识库
+              {t("sidebar.sectionTitle", { ns: "knowledge" })}
             </div>
             <Button
               type="text"
@@ -369,7 +372,12 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
         </Skeleton>
       </section>
       <Modal
-        title={`${knowledgeId ? "编辑" : "新增"}知识库`}
+        title={t(
+          knowledgeId
+            ? "sidebar.modal.editTitle"
+            : "sidebar.modal.createTitle",
+          { ns: "knowledge" }
+        )}
         open={modalOpen}
         onCancel={() => handleModalOpenChange(false)}
         afterClose={handleAfterClose}
@@ -389,7 +397,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
           className="mt-6"
         >
           <Form.Item
-            label="名称"
+            label={t("sidebar.form.name.label", { ns: "knowledge" })}
             name="name"
             rules={[
               {
@@ -397,20 +405,22 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
                 min: 1,
                 max: 100,
                 type: "string",
-                message: "名称不能为空，并且长度不能超过 100 个字符",
+                message: t("sidebar.form.name.range", { ns: "knowledge" }),
               },
             ]}
           >
             <Input maxLength={100} />
           </Form.Item>
           <Form.Item
-            label="描述"
+            label={t("sidebar.form.description.label", { ns: "knowledge" })}
             name="description"
             rules={[
               {
                 type: "string",
                 max: 500,
-                message: "描述长度不能超过 500 个字符",
+                message: t("sidebar.form.description.max", {
+                  ns: "knowledge",
+                }),
               },
             ]}
           >

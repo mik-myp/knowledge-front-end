@@ -23,6 +23,7 @@ import { useRequest } from "ahooks"
 import { App, theme } from "antd"
 import dayjs from "dayjs"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import ChatProvider from "./chatProvider"
 import ChatList from "./components/ChatList"
 import ChatSender from "./components/ChatSender"
@@ -72,25 +73,10 @@ const isPersistedConversationKey = (key?: string) =>
  * @param value 用户输入的消息内容。
  * @returns 返回适合作为会话名称的标题文本。
  */
-const buildConversationTitle = (value: string) => {
+const buildConversationTitle = (value: string, fallbackTitle: string) => {
   const nextTitle = value.slice(0, 50)
 
-  return nextTitle || "普通会话"
-}
-
-/**
- * 生成会话复用提示文案。
- * @param knowledge 知识库对象。
- * @returns 返回字符串结果。
- */
-const buildConversationReuseMessage = (
-  knowledge?: TKnowledgeBaseRecord
-): string => {
-  if (knowledge?.name) {
-    return `已存在知识库「${knowledge.name}」的待开始会话，已切换过去`
-  }
-
-  return "已存在待开始的普通会话，已切换过去"
+  return nextTitle || fallbackTitle
 }
 
 /**
@@ -98,9 +84,12 @@ const buildConversationReuseMessage = (
  * @param error 错误对象。
  * @returns 返回字符串结果。
  */
-const buildChatRequestErrorMessage = (error: Error): string => {
+const buildChatRequestErrorMessage = (
+  error: Error,
+  translate: (key: string) => string
+): string => {
   if (error.name === "AbortError") {
-    return "已停止生成回答"
+    return translate("errors.abort")
   }
 
   const errorMessage = error.message.trim()
@@ -110,14 +99,14 @@ const buildChatRequestErrorMessage = (error: Error): string => {
   }
 
   if (errorMessage.includes("status 504")) {
-    return "知识库检索超时，请稍后重试"
+    return translate("errors.retrievalTimeout")
   }
 
   if (errorMessage.includes("status 502")) {
-    return "知识库服务暂时不可用，请稍后重试"
+    return translate("errors.serviceUnavailable")
   }
 
-  return errorMessage || "本次问答处理失败，请稍后重试"
+  return errorMessage || translate("errors.failed")
 }
 
 /**
@@ -195,15 +184,18 @@ const createChatAskStreamTransform = () => {
  * @param updatedAt 会话最后更新时间。
  * @returns 返回今天、昨天或具体日期分组名称。
  */
-const getConversationGroup = (updatedAt: string) => {
+const getConversationGroup = (
+  updatedAt: string,
+  translate: (key: string) => string
+) => {
   const updateTime = dayjs(updatedAt)
 
   if (updateTime.isSame(dayjs(), "day")) {
-    return "今天"
+    return translate("group.today")
   }
 
   if (updateTime.isSame(dayjs().subtract(1, "day"), "day")) {
-    return "昨天"
+    return translate("group.yesterday")
   }
 
   return updateTime.format("MMM DD")
@@ -214,11 +206,14 @@ const getConversationGroup = (updatedAt: string) => {
  * @param session 会话对象。
  * @returns 返回对话会话Item。
  */
-const toConversationItem = (session: TChatRecord): TChatConversationItem => {
+const toConversationItem = (
+  session: TChatRecord,
+  translate: (key: string) => string
+): TChatConversationItem => {
   return {
     key: session.id,
     label: session.title,
-    group: getConversationGroup(session.updatedAt),
+    group: getConversationGroup(session.updatedAt, translate),
     title: session.title,
     knowledgeBaseId: session.knowledgeBaseId,
   }
@@ -259,6 +254,7 @@ const toDefaultMessages = (
  * @returns 返回组件渲染结果。
  */
 const AIChat = () => {
+  const { t } = useTranslation("chat")
   const {
     token: { colorBgContainer, paddingLG },
   } = theme.useToken()
@@ -314,7 +310,9 @@ const AIChat = () => {
       {
         manual: true,
         onSuccess: ({ sessionList }) => {
-          const nextConversations = sessionList.map(toConversationItem)
+          const nextConversations = sessionList.map((item) =>
+            toConversationItem(item, (key) => t(key))
+          )
 
           setConversations(nextConversations)
           setDraftConversations((currentDrafts) =>
@@ -479,7 +477,7 @@ const AIChat = () => {
         activeConversationKeyRef.current ??
         "",
       messageType: "ai",
-      content: buildChatRequestErrorMessage(error),
+      content: buildChatRequestErrorMessage(error, (key) => t(key)),
       streamStatus: "error",
       sequence: messageInfo?.message.sequence ?? 0,
       createdAt: new Date().toISOString(),
@@ -490,7 +488,7 @@ const AIChat = () => {
       userId: "",
       sessionId: requestParams.sessionId ?? requestParams.localSessionId ?? "",
       messageType: "ai",
-      content: "正在思考中...",
+      content: t("placeholder.thinking"),
       streamStatus: "progress",
       sequence: 0,
       createdAt: new Date().toISOString(),
@@ -517,7 +515,9 @@ const AIChat = () => {
             ...item,
             isDraft: false,
             serverSessionId: sessionId,
-            group: getConversationGroup(new Date().toISOString()),
+            group: getConversationGroup(new Date().toISOString(), (key) =>
+              t(key)
+            ),
             label: item.title,
           }
         })
@@ -559,16 +559,29 @@ const AIChat = () => {
 
   useEffect(() => {
     void loadSessionsAsync()
-  }, [loadSessionsAsync])
+  }, [loadSessionsAsync, t])
+
+  useEffect(() => {
+    setDraftConversations((currentDrafts) =>
+      currentDrafts.map((item) => ({
+        ...item,
+        group: t("group.draft"),
+      }))
+    )
+  }, [t])
 
   const createDraftConversation = useCallback(
     (params: { knowledge?: TKnowledgeBaseRecord; title?: string }) => {
       const draftConversationKey = `${LOCAL_CONVERSATION_KEY_PREFIX}${Date.now()}`
-      const title = params.title || `${params.knowledge?.name ?? "普通"}会话`
+      const title =
+        params.title ||
+        (params.knowledge?.name
+          ? t("defaults.knowledgeConversation", { name: params.knowledge.name })
+          : t("defaults.generalConversation"))
       const nextConversation: TChatConversationItem = {
         key: draftConversationKey,
         label: title,
-        group: "待开始",
+        group: t("group.draft"),
         title,
         knowledgeBaseId: params.knowledge?.id,
         knowledgeBaseName: params.knowledge?.name,
@@ -582,7 +595,7 @@ const AIChat = () => {
       setActiveConversationKey(draftConversationKey)
       return nextConversation
     },
-    [setActiveConversationKey]
+    [setActiveConversationKey, t]
   )
 
   const handleCreateConversation = useCallback(
@@ -601,13 +614,19 @@ const AIChat = () => {
 
       if (existingDraftConversation) {
         setActiveConversationKey(existingDraftConversation.key)
-        message.info(buildConversationReuseMessage(knowledge))
+        message.info(
+          knowledge?.name
+            ? t("reuse.knowledge", { name: knowledge.name })
+            : t("reuse.general")
+        )
         return
       }
 
       createDraftConversation({
         knowledge,
-        title: knowledge ? `${knowledge.name} 会话` : "普通会话",
+        title: knowledge
+          ? t("defaults.knowledgeConversation", { name: knowledge.name })
+          : t("defaults.generalConversation"),
       })
     },
     [
@@ -688,7 +707,7 @@ const AIChat = () => {
       }
 
       if (!activeConversationKey) {
-        message.warning("请先选择会话")
+        message.warning(t("errors.selectConversation"))
         return
       }
 
@@ -698,7 +717,7 @@ const AIChat = () => {
 
       if (activeConversationKey === NEW_CONVERSATION_KEY) {
         const nextDraftConversation = createDraftConversation({
-          title: buildConversationTitle(value),
+          title: buildConversationTitle(value, t("defaults.generalConversation")),
         })
 
         queueRequest(nextDraftConversation.key, {
@@ -738,15 +757,18 @@ const AIChat = () => {
       message,
       onRequest,
       queueRequest,
+      t,
     ]
   )
 
   const centeredComposerTitle = activeDraftConversation?.knowledgeBaseId
-    ? "开启知识库对话"
-    : "开启新对话"
+    ? t("centeredComposer.knowledge.title")
+    : t("centeredComposer.general.title")
   const centeredComposerDescription = activeDraftConversation?.knowledgeBaseName
-    ? `当前会话将关联知识库「${activeDraftConversation.knowledgeBaseName}」，发送首条消息后才会真正创建会话。`
-    : "你可以直接提问，也可以在左侧新建知识库会话后开始问答。"
+    ? t("centeredComposer.knowledge.description", {
+        name: activeDraftConversation.knowledgeBaseName,
+      })
+    : t("centeredComposer.general.description")
 
   const shouldShowMessageLoading =
     (isDefaultMessagesRequesting || conversationMessagesLoading) &&

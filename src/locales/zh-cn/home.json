@@ -1,0 +1,89 @@
+{
+  "greeting": {
+    "afternoon": "下午好",
+    "evening": "晚上好",
+    "morning": "早上好"
+  },
+  "summary": {
+    "full": "工作台已经成型，可以继续扩充知识库或回到 AI 对话里深入提问。",
+    "none": "从知识库、文档和会话这三步开始，把工作台真正跑起来。",
+    "one": "基础骨架已经有了，继续补齐文档或会话，首页就会更有内容。",
+    "two": "离完整工作流只差一步，现在最适合开始沉淀问答记录。"
+  },
+  "hero": {
+    "description": "知识库工作台已经准备好继续推进。",
+    "enterAiChat": "进入 AI 对话",
+    "refresh": "刷新首页",
+    "titleWithUser": "{{greeting}}，{{username}}。",
+    "titleWithoutUser": "{{greeting}}。",
+    "viewDocuments": "查看文档"
+  },
+  "progress": {
+    "eyebrow": "工作流进度",
+    "knowledge": {
+      "done": "当前已有 {{count}} 个知识库",
+      "done_other": "当前已有 {{count}} 个知识库",
+      "title": "建立知识库",
+      "todo": "先创建一个主题入口，后续文档和问答都围绕它展开。"
+    },
+    "document": {
+      "done": "当前已收录 {{count}} 份文档",
+      "done_other": "当前已收录 {{count}} 份文档",
+      "title": "导入文档",
+      "todo": "上传 PDF、Markdown 或文本，让知识库真正有内容可检索。"
+    },
+    "conversation": {
+      "done": "当前已有 {{count}} 个问答会话",
+      "done_other": "当前已有 {{count}} 个问答会话",
+      "title": "开始问答",
+      "todo": "发起第一轮问答，让文档内容进入实际使用阶段。"
+    }
+  },
+  "stats": {
+    "knowledge": {
+      "caption": "用于组织主题、文档和问答范围。",
+      "label": "知识库"
+    },
+    "document": {
+      "caption": "首页展示最近 6 份，其余文档可在文档页继续管理。",
+      "label": "文档总量"
+    },
+    "conversation": {
+      "caption": "包含普通会话和绑定知识库的问答记录。",
+      "label": "AI 会话"
+    },
+    "readiness": {
+      "caption": "已完成 {{completed}} / 3 个关键准备动作。",
+      "label": "工作台进度"
+    }
+  },
+  "recentDocuments": {
+    "button": "查看全部",
+    "collectedAt": "收录时间 {{time}}",
+    "empty": "还没有文档，先上传一份试试。",
+    "eyebrow": "最近文档",
+    "title": "最近导入的知识内容"
+  },
+  "recentSessions": {
+    "button": "进入对话",
+    "empty": "还没有问答记录，去开始第一轮对话。",
+    "eyebrow": "最近会话",
+    "generalConversation": "普通会话",
+    "knowledgeConversation": "知识库会话",
+    "title": "AI 对话轨迹"
+  },
+  "knowledgeBases": {
+    "button": "继续完善",
+    "defaultDescription": "还没有描述，建议补充这个知识库要解决的问题。",
+    "empty": "还没有知识库，先建立主题容器。",
+    "eyebrow": "知识库清单",
+    "title": "当前内容骨架"
+  },
+  "sourceType": {
+    "editor": "编辑器文档",
+    "upload": "上传文档"
+  },
+  "fallback": {
+    "enteredWorkspace": "刚刚进入工作台"
+  }
+}

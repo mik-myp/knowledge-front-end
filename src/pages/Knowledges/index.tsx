@@ -26,6 +26,7 @@ import {
 } from "antd"
 import { useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router"
+import { useTranslation } from "react-i18next"
 import UploadBtn from "../../components/UploadBtn"
 
 const { Text } = Typography
@@ -95,6 +96,7 @@ type TKnowledgeDocumentsInfiniteData = {
  * @returns 返回组件渲染结果。
  */
 const Knowledges = () => {
+  const { t } = useTranslation(["knowledge", "common"])
   const { id } = useParams()
   const navigate = useNavigate()
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
@@ -178,7 +180,7 @@ const Knowledges = () => {
   const descriptionsItems: DescriptionsProps["items"] = [
     {
       key: "description",
-      label: "描述",
+      label: t("detail.description"),
       children: data?.description,
     },
   ]
@@ -212,7 +214,7 @@ const Knowledges = () => {
               loading={downloadLoading}
             />
             <Popconfirm
-              title="确定要删除吗？"
+              title={t("detail.deleteConfirm")}
               onConfirm={async (e) => {
                 e?.stopPropagation()
                 await deleteAsync({ id: item.id })
@@ -284,7 +286,7 @@ const Knowledges = () => {
                   className="mb-1 text-[11px] tracking-[0.16em] uppercase"
                   style={{ color: colorTextSecondary }}
                 >
-                  文件大小
+                  {t("detail.fileSize")}
                 </div>
                 <Text strong>{formatFileSize(item.size)}</Text>
               </div>
@@ -293,10 +295,10 @@ const Knowledges = () => {
                   className="mb-1 text-[11px] tracking-[0.16em] uppercase"
                   style={{ color: colorTextSecondary }}
                 >
-                  文件来源
+                  {t("detail.fileSource")}
                 </div>
                 <Text strong>
-                  {item.sourceType === "upload" ? "上传" : "编辑器"}
+                  {t(`sourceType.${item.sourceType}`)}
                 </Text>
               </div>
             </div>
@@ -306,7 +308,7 @@ const Knowledges = () => {
                 className="mb-1 text-[11px] tracking-[0.16em] uppercase"
                 style={{ color: colorTextSecondary }}
               >
-                索引状态
+                {t("detail.indexStatus")}
               </div>
               <div className="flex items-center gap-2">
                 <Text strong>
@@ -357,14 +359,14 @@ const Knowledges = () => {
               <Masonry columns={4} gutter={16} items={masonryItems} />
               <div className="py-4 text-center text-sm text-gray-500">
                 {loadingMore ? (
-                  <div>加载中...</div>
+                  <div>{t("common:states.loading")}</div>
                 ) : noMore ? (
-                  "已加载全部文档"
+                  t("detail.loadedAll")
                 ) : null}
               </div>
             </>
           ) : (
-            !isInitialDocumentsLoading && <Empty description="暂无文档" />
+            !isInitialDocumentsLoading && <Empty description={t("detail.empty")} />
           )}
         </div>
       </div>
