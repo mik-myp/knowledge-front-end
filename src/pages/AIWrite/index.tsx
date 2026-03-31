@@ -1,73 +1,38 @@
-import { Button, Divider, Layout, theme } from "antd"
-import {
-  MDXEditor,
-  headingsPlugin,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
-  toolbarPlugin,
-  BlockTypeSelect,
-} from "@mdxeditor/editor"
+import { Button, theme } from "antd"
 import "@mdxeditor/editor/style.css"
-import Markdown from "@/components/Markdown"
-import { cn } from "@/lib/utils"
 import { useState } from "react"
-
-const { Header, Content } = Layout
+import MarkdownEditor from "@/components/MarkdownEditor"
 
 const AIWrite = () => {
   const {
     token: { colorBgContainer },
   } = theme.useToken()
 
-  const [markdownContent, setMarkdownContent] = useState("# Hello world")
+  const [markdownContent, setMarkdownContent] = useState(`# Hlo World`)
 
   return (
-    <Layout className="h-full bg-white">
-      <Header
+    <div className="bg-white">
+      <div
         style={{ background: colorBgContainer }}
-        className="flex h-15 items-center justify-between border-b-(length:--ant-menu-active-bar-border-width) px-4"
+        className="sticky top-0 z-10 pb-4"
       >
-        <Button type="link">返回</Button>
-      </Header>
-
-      <Content className="flex h-full flex-row gap-4">
-        <div
-          className={cn(
-            "m-4 flex-1 rounded-2xl",
-            "[border-width:var(--ant-menu-active-bar-border-width)]"
-          )}
-        >
-          <MDXEditor
-            markdown={markdownContent}
-            plugins={[
-              headingsPlugin(),
-              toolbarPlugin({
-                toolbarClassName: "rounded-tl-2xl! rounded-tr-2xl!",
-                toolbarContents: () => (
-                  <>
-                    <UndoRedo />
-                    <Divider orientation="vertical" />
-                    <BoldItalicUnderlineToggles />
-                    <Divider orientation="vertical" />
-                    <BlockTypeSelect />
-                  </>
-                ),
-              }),
-            ]}
-            onChange={setMarkdownContent}
-          />
+        <div className="flex h-15 items-center justify-between border-b border-black/6 px-4">
+          <Button type="link">返回</Button>
         </div>
+      </div>
 
-        <div
-          className={cn(
-            "m-4 flex-1 rounded-2xl",
-            "[border-width:var(--ant-menu-active-bar-border-width)]"
-          )}
-        >
-          <Markdown content={markdownContent} className="p-3" />
-        </div>
-      </Content>
-    </Layout>
+      <div
+        className="prose rounded-2xl px-4 pb-4"
+        style={{
+          maxWidth: "stretch",
+        }}
+      >
+        <MarkdownEditor
+          markdown={markdownContent}
+          onChange={setMarkdownContent}
+        />
+      </div>
+    </div>
   )
 }
 
