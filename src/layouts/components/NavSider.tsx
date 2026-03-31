@@ -73,6 +73,11 @@ const items: MenuItem[] = [
     icon: <RobotOutlined />,
   },
   {
+    key: "/ai/write",
+    label: "AI写作",
+    icon: <EditOutlined />,
+  },
+  {
     type: "divider",
   },
 ]

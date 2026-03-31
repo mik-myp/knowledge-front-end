@@ -38,7 +38,6 @@ const router = createBrowserRouter([
         index: true,
         lazy: async () => {
           const module = await import("@/pages/Home")
-
           return {
             Component: module.default,
           }
@@ -48,7 +47,6 @@ const router = createBrowserRouter([
         path: "documents",
         lazy: async () => {
           const module = await import("@/pages/Documents")
-
           return {
             Component: module.default,
           }
@@ -58,7 +56,6 @@ const router = createBrowserRouter([
         path: "knowledges/:id",
         lazy: async () => {
           const module = await import("@/pages/Knowledges")
-
           return {
             Component: module.default,
           }
@@ -68,7 +65,6 @@ const router = createBrowserRouter([
         path: "documents/:id",
         lazy: async () => {
           const module = await import("@/pages/Documents/Detail")
-
           return {
             Component: module.default,
           }
@@ -80,7 +76,15 @@ const router = createBrowserRouter([
     path: "/ai",
     lazy: async () => {
       const module = await import("@/pages/AIChat")
-
+      return {
+        Component: module.default,
+      }
+    },
+  },
+  {
+    path: "/ai/write",
+    lazy: async () => {
+      const module = await import("@/pages/AIWrite")
       return {
         Component: module.default,
       }
