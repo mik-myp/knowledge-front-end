@@ -297,9 +297,7 @@ const Knowledges = () => {
                 >
                   {t("detail.fileSource")}
                 </div>
-                <Text strong>
-                  {t(`sourceType.${item.sourceType}`)}
-                </Text>
+                <Text strong>{t(`sourceType.${item.sourceType}`)}</Text>
               </div>
             </div>
 
@@ -366,7 +364,9 @@ const Knowledges = () => {
               </div>
             </>
           ) : (
-            !isInitialDocumentsLoading && <Empty description={t("detail.empty")} />
+            !isInitialDocumentsLoading && (
+              <Empty description={t("detail.empty")} />
+            )
           )}
         </div>
       </div>

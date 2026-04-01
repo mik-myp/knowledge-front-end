@@ -187,7 +187,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
         })
       }
     },
-    [form, modal, handleDelete]
+    [form, modal, handleDelete, t]
   )
 
   const knowledgeItems = useMemo<MenuItem[]>(() => {
@@ -229,7 +229,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
       ),
       title: item.name,
     }))
-  }, [data, handleEllipsisClick, collapsed])
+  }, [data, handleEllipsisClick, collapsed, t])
 
   const handleMainClick: NonNullable<MenuProps["onClick"]> = ({ key }) => {
     navigate(key)
@@ -373,9 +373,7 @@ const NavSider = ({ collapsed }: { collapsed: boolean }) => {
       </section>
       <Modal
         title={t(
-          knowledgeId
-            ? "sidebar.modal.editTitle"
-            : "sidebar.modal.createTitle",
+          knowledgeId ? "sidebar.modal.editTitle" : "sidebar.modal.createTitle",
           { ns: "knowledge" }
         )}
         open={modalOpen}

@@ -523,7 +523,7 @@ const AIChat = () => {
         })
       )
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     completeDraftConversationRef.current = async (
@@ -634,6 +634,7 @@ const AIChat = () => {
       draftConversations,
       message,
       setActiveConversationKey,
+      t,
     ]
   )
 
@@ -717,7 +718,10 @@ const AIChat = () => {
 
       if (activeConversationKey === NEW_CONVERSATION_KEY) {
         const nextDraftConversation = createDraftConversation({
-          title: buildConversationTitle(value, t("defaults.generalConversation")),
+          title: buildConversationTitle(
+            value,
+            t("defaults.generalConversation")
+          ),
         })
 
         queueRequest(nextDraftConversation.key, {

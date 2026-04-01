@@ -1,40 +1,25 @@
 import {
   MDXEditor,
   headingsPlugin,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
   toolbarPlugin,
-  BlockTypeSelect,
   quotePlugin,
   listsPlugin,
-  Separator,
   directivesPlugin,
   AdmonitionDirectiveDescriptor,
-  CodeToggle,
-  ListsToggle,
-  InsertTable,
   linkPlugin,
   linkDialogPlugin,
   tablePlugin,
   thematicBreakPlugin,
   frontmatterPlugin,
-  HighlightToggle,
-  StrikeThroughSupSubToggles,
-  CreateLink,
-  InsertThematicBreak,
-  InsertCodeBlock,
-  InsertAdmonition,
   codeBlockPlugin,
   codeMirrorPlugin,
   diffSourcePlugin,
   markdownShortcutPlugin,
-  DiffSourceToggleWrapper,
-  ConditionalContents,
-  ChangeAdmonitionType,
-  ChangeCodeMirrorLanguage,
-  ShowSandpackInfo,
-  type EditorInFocus,
-  DirectiveNode,
+  type MDXEditorProps,
+  imagePlugin,
+  KitchenSinkToolbar,
+  sandpackPlugin,
+  type SandpackConfig,
 } from "@mdxeditor/editor"
 import i18n from "@/lib/i18n"
 import { useGlobal } from "@/stores/useGlobal"
@@ -89,24 +74,48 @@ const codeBlockLanguages = {
   graphql: "GraphQL",
 } as const
 
-function whenInAdmonition(editorInFocus: EditorInFocus | null) {
-  const node = editorInFocus?.rootNode
-  if (!node || node.getType() !== "directive") {
-    return false
-  }
-
-  return ["note", "tip", "danger", "info", "caution"].includes(
-    (node as DirectiveNode).getMdastNode().name
-  )
+const virtuosoSampleSandpackConfig: SandpackConfig = {
+  defaultPreset: "react",
+  presets: [
+    {
+      label: "React",
+      name: "react",
+      meta: "live react",
+      sandpackTemplate: "react",
+      sandpackTheme: "light",
+      snippetFileName: "/App.js",
+      snippetLanguage: "jsx",
+    },
+    {
+      label: "React",
+      name: "react",
+      meta: "live",
+      sandpackTemplate: "react",
+      sandpackTheme: "light",
+      snippetFileName: "/App.js",
+      snippetLanguage: "jsx",
+    },
+    {
+      label: "Virtuoso",
+      name: "virtuoso",
+      meta: "live virtuoso",
+      sandpackTemplate: "react-ts",
+      sandpackTheme: "light",
+      snippetFileName: "/App.tsx",
+      dependencies: {
+        "react-virtuoso": "latest",
+        "@ngneat/falso": "latest",
+      },
+    },
+  ],
 }
 
 const MarkdownEditor = ({
-  markdown,
-  onChange,
+  toolbarClassName,
+  ...props
 }: {
-  markdown: string
-  onChange: (markdown: string, initialMarkdownNormalize: boolean) => void
-}) => {
+  toolbarClassName?: string
+} & MDXEditorProps) => {
   const language = useGlobal((state) => state.language)
   const { t } = useTranslation("editor")
   const localizedCodeBlockLanguages = {
@@ -117,17 +126,18 @@ const MarkdownEditor = ({
   return (
     <MDXEditor
       key={language}
-      markdown={markdown}
-      onChange={onChange}
+      {...props}
       plugins={[
         listsPlugin(),
         quotePlugin(),
         headingsPlugin(),
         linkPlugin(),
         linkDialogPlugin(),
+        imagePlugin(),
         tablePlugin(),
         thematicBreakPlugin(),
         frontmatterPlugin(),
+        sandpackPlugin({ sandpackConfig: virtuosoSampleSandpackConfig }),
         codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
         codeMirrorPlugin({
           codeBlockLanguages: localizedCodeBlockLanguages,
@@ -138,78 +148,8 @@ const MarkdownEditor = ({
         diffSourcePlugin({ viewMode: "rich-text", diffMarkdown: "boo" }),
         markdownShortcutPlugin(),
         toolbarPlugin({
-          toolbarClassName: "rounded-tl-2xl! rounded-tr-2xl! top-19!",
-          toolbarContents: () => (
-            <DiffSourceToggleWrapper>
-              <ConditionalContents
-                options={[
-                  {
-                    when: (editor) => editor?.editorType === "codeblock",
-                    contents: () => <ChangeCodeMirrorLanguage />,
-                  },
-                  {
-                    when: (editor) => editor?.editorType === "sandpack",
-                    contents: () => <ShowSandpackInfo />,
-                  },
-                  {
-                    fallback: () => (
-                      <>
-                        <UndoRedo />
-                        <Separator />
-                        <BoldItalicUnderlineToggles />
-                        <CodeToggle />
-                        <HighlightToggle />
-                        <Separator />
-                        <StrikeThroughSupSubToggles />
-                        <Separator />
-                        <ListsToggle />
-                        <Separator />
-
-                        <ConditionalContents
-                          options={[
-                            {
-                              when: whenInAdmonition,
-                              contents: () => <ChangeAdmonitionType />,
-                            },
-                            { fallback: () => <BlockTypeSelect /> },
-                          ]}
-                        />
-
-                        <Separator />
-
-                        <CreateLink />
-
-                        <Separator />
-
-                        <InsertTable />
-                        <InsertThematicBreak />
-
-                        <Separator />
-                        <InsertCodeBlock />
-
-                        <ConditionalContents
-                          options={[
-                            {
-                              when: (editorInFocus) =>
-                                !whenInAdmonition(editorInFocus),
-                              contents: () => (
-                                <>
-                                  <Separator />
-                                  <InsertAdmonition />
-                                </>
-                              ),
-                            },
-                          ]}
-                        />
-
-                        <Separator />
-                      </>
-                    ),
-                  },
-                ]}
-              />
-            </DiffSourceToggleWrapper>
-          ),
+          toolbarClassName,
+          toolbarContents: () => <KitchenSinkToolbar />,
         }),
       ]}
       translation={(key, defaultValue, interpolations): string => {

@@ -97,8 +97,8 @@ const PdfPreview = ({ documentId }: PdfPreviewProps) => {
           <Button
             icon={<LeftOutlined />}
             disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-        >
+            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+          >
             {t("preview.pdfPrev")}
           </Button>
           <Button

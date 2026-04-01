@@ -2,7 +2,100 @@
   "header": {
     "back": "Back"
   },
+  "panel": {
+    "title": "Writing Settings",
+    "description": "Define the goal, style, and constraints first, then generate content."
+  },
+  "storage": {
+    "title": "Settings are currently stored in browser cache",
+    "description": "This is suitable for personal preferences and the most recent writing setup. If you need cross-device sync later, move user presets to the database."
+  },
+  "section": {
+    "basic": "What To Write",
+    "style": "How To Write",
+    "constraints": "Additional Requirements"
+  },
+  "form": {
+    "topic": "Topic",
+    "topicRequired": "Please enter a topic first",
+    "articleType": "Content Type",
+    "audience": "Target Audience",
+    "language": "Language",
+    "tone": "Tone",
+    "length": "Length",
+    "format": "Output Format",
+    "creativity": "Creativity",
+    "includeTitle": "Generate Title",
+    "includeSummary": "Generate Summary",
+    "includeOutline": "Generate Outline",
+    "keywords": "Keywords",
+    "referenceContent": "Reference Material",
+    "mustInclude": "Must Include",
+    "avoidWords": "Avoid",
+    "extraRequirement": "Extra Requirements"
+  },
+  "placeholder": {
+    "topic": "Example: Write a review article about rolling out a knowledge base product",
+    "audience": "Example: product managers, operations teams, enterprise clients",
+    "keywords": "One per line, or separated by commas",
+    "referenceContent": "Paste background notes, meeting notes, competitor info, or raw material",
+    "mustInclude": "Example: mention launch context, core features, and outcome",
+    "avoidWords": "Example: avoid exaggerated claims, hard-sell language, and slang",
+    "extraRequirement": "Example: end with 3 actionable suggestions and keep paragraphs concise"
+  },
+  "tooltip": {
+    "creativity": "Higher values make the output more divergent. Lower values keep it steadier."
+  },
+  "options": {
+    "articleType": {
+      "article": "Article",
+      "blog": "Blog Post",
+      "report": "Report",
+      "social": "Social Copy",
+      "email": "Email"
+    },
+    "language": {
+      "zh-CN": "Chinese",
+      "en-US": "English"
+    },
+    "tone": {
+      "professional": "Professional",
+      "friendly": "Friendly",
+      "formal": "Formal",
+      "persuasive": "Persuasive"
+    },
+    "length": {
+      "short": "Short",
+      "medium": "Medium",
+      "long": "Long"
+    },
+    "format": {
+      "markdown": "Markdown",
+      "plain": "Plain Text"
+    }
+  },
+  "actions": {
+    "reset": "Reset",
+    "generatePrompt": "Generate Prompt"
+  },
+  "summary": {
+    "title": "Current Summary",
+    "topic": "Topic",
+    "basic": "Basic Requirements",
+    "style": "Style Requirements",
+    "constraints": "Content Constraints",
+    "empty": "Not specified",
+    "emptyTopic": "No topic yet. Start from the topic first."
+  },
   "editor": {
-    "initialContent": "# Hello World"
+    "title": "Writing Area",
+    "description": "You can continue refining the prompt here or edit the final content directly.",
+    "emptyTitle": "Configure your writing requirements on the left first",
+    "emptyDescription": "After you set the topic, style, length, and other options, click “Generate Prompt” to create a usable prompt draft on the right.",
+    "promptTitle": "AI Writing Prompt"
+  },
+  "boolean": {
+    "yes": "Yes",
+    "no": "No"
   }
 }
