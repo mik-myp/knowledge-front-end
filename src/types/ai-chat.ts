@@ -1,5 +1,6 @@
 import type { TChatConversationItem, TChatMessageRecord } from "@/types/chat"
 import type { TKnowledgeBaseRecord } from "@/types/knowledge"
+import type React from "react"
 
 /**
  * 定义对话列表消息Item的类型结构。
@@ -49,4 +50,7 @@ export type TKnowledgeSelectModalProps = {
   open: boolean
   onCancel: () => void
   onConfirm: (knowledge?: TKnowledgeBaseRecord) => void
+  title?: string
+  header?: React.ReactNode
+  confirmLoading?: boolean
 }

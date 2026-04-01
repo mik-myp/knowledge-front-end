@@ -10,6 +10,7 @@ import type {
   TListDocumentsQuery,
   TRemoveDocumentsResult,
   TRemoveDocumentsInput,
+  TEditorDocumentData,
 } from "@/types/documents"
 
 /**
@@ -133,4 +134,11 @@ export async function downloadDocumentOriginalFile(
 ) {
   const blob = await fetchDocumentFile({ id: data.id })
   downloadBlob(blob, buildDownloadFileName(data.fileName, data.extension))
+}
+
+export async function editorDocument(data: TEditorDocumentData) {
+  return await request<TDocumentRecord>(`/documents/editor`, {
+    method: "POST",
+    data,
+  })
 }

@@ -11,7 +11,7 @@ import { App, Button, Form, Input, Modal, Spin, theme } from "antd"
 import { useState } from "react"
 import { useNavigate } from "react-router"
 import { useTranslation } from "react-i18next"
-import KnowledgeSelectModal from "./KnowledgeSelectModal"
+import KnowledgeSelectModal from "@/components/KnowledgeSelectModal"
 
 /**
  * 渲染会话列表中的标题内容。
@@ -220,6 +220,13 @@ const ChatSide = ({
         open={open}
         onCancel={() => setOpen(false)}
         onConfirm={handleConfirm}
+        title={t("knowledgeSelect.title")}
+        header={
+          <div className="mb-4 flex flex-col gap-2 text-sm text-black/45">
+            <div>{t("knowledgeSelect.withKnowledge")}</div>
+            <div>{t("knowledgeSelect.withoutKnowledge")}</div>
+          </div>
+        }
       />
       <Modal
         open={renameOpen}

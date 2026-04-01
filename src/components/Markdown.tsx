@@ -50,7 +50,10 @@ const Markdown = ({ className, components, ...restProps }: XMarkdownProps) => {
       paragraphTag="div"
       openLinksInNewTab
       escapeRawHtml
-      className={["x-markdown-light", className].filter(Boolean).join(" ")}
+      className={["x-markdown-light prose", className]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ maxWidth: "stretch" }}
       components={{
         ...components,
         code: MarkdownCode,

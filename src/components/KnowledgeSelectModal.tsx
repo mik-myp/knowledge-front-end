@@ -20,6 +20,9 @@ const KnowledgeSelectModal = ({
   open,
   onCancel,
   onConfirm,
+  title,
+  header,
+  confirmLoading,
 }: TKnowledgeSelectModalProps) => {
   const { t } = useTranslation("chat")
   const [searchValue, setSearchValue] = useState("")
@@ -51,7 +54,7 @@ const KnowledgeSelectModal = ({
     <Modal
       open={open}
       onCancel={onCancel}
-      title={t("knowledgeSelect.title")}
+      title={title}
       width={700}
       centered
       afterClose={() => {
@@ -59,12 +62,10 @@ const KnowledgeSelectModal = ({
         setSelectedKnowledge(undefined)
       }}
       onOk={() => onConfirm(selectedKnowledge)}
+      confirmLoading={confirmLoading}
     >
       <div>
-        <div className="mb-4 flex flex-col gap-2 text-sm text-black/45">
-          <div>{t("knowledgeSelect.withKnowledge")}</div>
-          <div>{t("knowledgeSelect.withoutKnowledge")}</div>
-        </div>
+        {header}
         <Input
           value={searchValue}
           onChange={(event) => setSearchValue(event.target.value)}

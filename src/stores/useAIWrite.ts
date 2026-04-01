@@ -1,14 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-
-export type TAIWriteConfig = {
-  topic: string
-  articleType: "blog" | "summary" | "report" | "product" | "story" | "email"
-  language: "chinese" | "english"
-  tone: "professional" | "friendly" | "formal" | "persuasive"
-  length: "short" | "medium" | "long"
-  creativity: number
-}
+import type { TAIWriteConfig } from "@/types/write"
 
 const defaultWriteConfig: TAIWriteConfig = {
   topic: "",
@@ -16,7 +8,7 @@ const defaultWriteConfig: TAIWriteConfig = {
   language: "chinese",
   tone: "professional",
   length: "medium",
-  creativity: 50,
+  creativity: 0.7,
 }
 
 export const useAIWrite = create<{

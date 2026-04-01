@@ -90,3 +90,9 @@ export type TRemoveDocumentsResult = {
   deletedCount: number
   deletedIds: string[]
 }
+
+export type TEditorDocumentData = {
+  knowledgeBaseId: string
+  name: string
+  content: string
+}

@@ -1,5 +1,6 @@
 import {
   MDXEditor,
+  type MDXEditorMethods,
   headingsPlugin,
   toolbarPlugin,
   quotePlugin,
@@ -21,6 +22,7 @@ import {
   sandpackPlugin,
   type SandpackConfig,
 } from "@mdxeditor/editor"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import i18n from "@/lib/i18n"
 import { useGlobal } from "@/stores/useGlobal"
 import { useTranslation } from "react-i18next"
@@ -110,48 +112,69 @@ const virtuosoSampleSandpackConfig: SandpackConfig = {
   ],
 }
 
-const MarkdownEditor = ({
-  toolbarClassName,
-  ...props
-}: {
-  toolbarClassName?: string
-} & MDXEditorProps) => {
+const MarkdownEditor = forwardRef<
+  MDXEditorMethods,
+  {
+    toolbarClassName?: string
+  } & MDXEditorProps
+>(({ toolbarClassName, markdown, onChange, ...props }, ref) => {
   const language = useGlobal((state) => state.language)
   const { t } = useTranslation("editor")
   const localizedCodeBlockLanguages = {
     "": t("codeBlockLanguages.unspecified"),
     ...codeBlockLanguages,
   } as const
+  const editorRef = useRef<MDXEditorMethods>(null)
+  const latestMarkdownRef = useRef(markdown)
+
+  useImperativeHandle(ref, () => editorRef.current as MDXEditorMethods, [])
+
+  useEffect(() => {
+    if (markdown === latestMarkdownRef.current) {
+      return
+    }
+
+    editorRef.current?.setMarkdown(markdown)
+    latestMarkdownRef.current = markdown
+  }, [markdown])
+
+  const plugins = [
+    listsPlugin(),
+    quotePlugin(),
+    headingsPlugin(),
+    linkPlugin(),
+    linkDialogPlugin(),
+    imagePlugin(),
+    tablePlugin(),
+    thematicBreakPlugin(),
+    frontmatterPlugin(),
+    sandpackPlugin({ sandpackConfig: virtuosoSampleSandpackConfig }),
+    codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
+    codeMirrorPlugin({
+      codeBlockLanguages: localizedCodeBlockLanguages,
+    }),
+    diffSourcePlugin({ viewMode: "rich-text", diffMarkdown: "boo" }),
+    markdownShortcutPlugin(),
+    directivesPlugin({
+      directiveDescriptors: [AdmonitionDirectiveDescriptor],
+    }),
+    toolbarPlugin({
+      toolbarClassName,
+      toolbarContents: () => <KitchenSinkToolbar />,
+    }),
+  ]
 
   return (
     <MDXEditor
       key={language}
+      ref={editorRef}
       {...props}
-      plugins={[
-        listsPlugin(),
-        quotePlugin(),
-        headingsPlugin(),
-        linkPlugin(),
-        linkDialogPlugin(),
-        imagePlugin(),
-        tablePlugin(),
-        thematicBreakPlugin(),
-        frontmatterPlugin(),
-        sandpackPlugin({ sandpackConfig: virtuosoSampleSandpackConfig }),
-        codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
-        codeMirrorPlugin({
-          codeBlockLanguages: localizedCodeBlockLanguages,
-        }),
-        directivesPlugin({
-          directiveDescriptors: [AdmonitionDirectiveDescriptor],
-        }),
-        diffSourcePlugin({ viewMode: "rich-text", diffMarkdown: "boo" }),
-        markdownShortcutPlugin(),
-        toolbarPlugin({
-          toolbarClassName,
-          toolbarContents: () => <KitchenSinkToolbar />,
-        }),
-      ]}
+      markdown={markdown}
+      onChange={(nextMarkdown, initialMarkdownNormalize) => {
+        latestMarkdownRef.current = nextMarkdown
+        onChange?.(nextMarkdown, initialMarkdownNormalize)
+      }}
+      plugins={plugins}
       translation={(key, defaultValue, interpolations): string => {
         return i18n.t(key, {
           lng: language,
@@ -162,5 +185,8 @@ const MarkdownEditor = ({
       }}
     />
   )
-}
+})
+
+MarkdownEditor.displayName = "MarkdownEditor"
+
 export default MarkdownEditor

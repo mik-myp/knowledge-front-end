@@ -6,52 +6,28 @@
     "title": "写作配置",
     "description": "先把写作目标、风格和限制条件配清楚，再开始生成内容。"
   },
-  "storage": {
-    "title": "当前先使用浏览器本地缓存保存",
-    "description": "适合保存个人偏好和最近一次使用的写作配置。后续如果要跨设备同步，再接用户配置接口存数据库。"
-  },
-  "section": {
-    "basic": "写什么",
-    "style": "怎么写",
-    "constraints": "补充要求"
-  },
   "form": {
     "topic": "写作主题",
     "topicRequired": "请先填写写作主题",
     "articleType": "内容类型",
-    "audience": "目标读者",
     "language": "输出语言",
     "tone": "语气风格",
     "length": "篇幅长度",
-    "format": "输出格式",
-    "creativity": "创作自由度",
-    "includeTitle": "生成标题",
-    "includeSummary": "生成摘要",
-    "includeOutline": "生成大纲",
-    "keywords": "关键词",
-    "referenceContent": "参考素材",
-    "mustInclude": "必须包含",
-    "avoidWords": "避免出现",
-    "extraRequirement": "额外要求"
+    "creativity": "创作自由度"
   },
   "placeholder": {
-    "topic": "例如：写一篇关于知识库产品落地经验的复盘文章",
-    "audience": "例如：产品经理、运营同学、企业客户",
-    "keywords": "一行一个，或者用顿号、逗号分隔",
-    "referenceContent": "粘贴背景资料、会议纪要、竞品信息或已有素材",
-    "mustInclude": "例如：必须提到上线背景、核心功能、上线效果",
-    "avoidWords": "例如：避免使用过度营销、夸张承诺、口语化黑话",
-    "extraRequirement": "例如：结尾给出 3 条可执行建议，并保持段落简洁"
+    "topic": "例如：写一篇关于知识库产品落地经验的复盘文章"
   },
   "tooltip": {
     "creativity": "数值越高，内容越发散；数值越低，表达越稳。"
   },
   "options": {
     "articleType": {
-      "article": "文章",
-      "blog": "博客",
-      "report": "报告",
-      "social": "社媒文案",
+      "blog": "博客文章",
+      "summary": "摘要总结",
+      "report": "技术报告",
+      "product": "产品介绍",
+      "story": "故事创作",
       "email": "邮件"
     },
     "language": {
@@ -68,34 +44,32 @@
       "short": "短篇",
       "medium": "中篇",
       "long": "长篇"
-    },
-    "format": {
-      "markdown": "Markdown",
-      "plain": "纯文本"
     }
   },
   "actions": {
     "reset": "恢复默认",
-    "generatePrompt": "生成写作提示词"
-  },
-  "summary": {
-    "title": "当前配置摘要",
-    "topic": "写作主题",
-    "basic": "基础要求",
-    "style": "风格要求",
-    "constraints": "内容限制",
-    "empty": "未填写",
-    "emptyTopic": "还没填写写作主题，可以先从主题开始。"
+    "start": "开始写作",
+    "submit": "提交"
   },
   "editor": {
-    "title": "写作区",
-    "description": "右侧可以继续补充提示词，也可以直接编辑最终内容。",
-    "emptyTitle": "先在左侧配置你的写作要求",
-    "emptyDescription": "填写主题、风格、长度等信息后，点击“生成写作提示词”，右侧会自动整理出一份可直接用于写作的提示词草稿。",
-    "promptTitle": "AI 写作提示词"
+    "emptyDescription": "填写主题、风格、长度等信息后，点击“开始写作”，生成内容会直接出现在编辑器中。"
   },
-  "boolean": {
-    "yes": "是",
-    "no": "否"
+  "streaming": {
+    "pending": "模型正在生成内容，请稍候。",
+    "failed": "本次写作失败，请稍后重试。",
+    "errorTitle": "写作中断"
+  },
+  "overwriteConfirm": {
+    "title": "确认重新开始写作",
+    "description": "当前编辑区已有内容。继续开始写作会用新的生成结果覆盖现有 Markdown，是否继续？",
+    "confirm": "确认覆盖",
+    "cancel": "取消"
+  },
+  "submitDialog": {
+    "title": "提交至知识库",
+    "placeholder": "新建文档名称",
+    "selectKnowledge": "请选择知识库",
+    "documentNameRequired": "请输入文档名称",
+    "success": "文档创建成功"
   }
 }
